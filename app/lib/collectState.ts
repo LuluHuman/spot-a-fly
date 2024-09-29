@@ -81,18 +81,19 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
     }
 
     const getContextName = async () => {
-        const description = player_state.context_metadata.context_description
+        const subtitle = player_state.track.metadata.station_subtitle;
+        const description = player_state.context_metadata?.context_description + (subtitle ? " • " + subtitle : "")
         if (description) return description
 
-        const uriParams = player_state.context_uri.split(":");
-        if (uriParams[3] == "collection") return "Liked Songs"
+        const uriParams = player_state.context_uri?.split(":");
+        if (uriParams && uriParams[3] == "collection") return "Liked Songs"
         if (player_state.context_uri == "spotify:internal:local-files") return "Local Files"
 
+        if (!player_state.context_uri) return "UNKNOWN"
         const req = SpotifyClient.getPlaylist(player_state.context_uri)
         if (!req) return player_state.context_uri || "UNKNOWN"
 
         const playlist = (await req as { name: string })
-        const subtitle = player_state.track.metadata.station_subtitle;
         return (playlist.name || "") + (subtitle ? " • " + subtitle : "")
     }
 
@@ -115,8 +116,8 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
 
     const getLikedStatus = async () => {
         if (player_state.track.uri.includes("local")) return true
-        const req = await SpotifyClient.trackContains(player_state.track.uri) as boolean[]
-        return req[0]
+        const req = await SpotifyClient.trackContains(player_state.track.uri) as { data: { lookup: { data: { isCurated: boolean } }[] } }
+        return req.data.lookup[0].data.isCurated
     }
 
     const changedState: SongState = {

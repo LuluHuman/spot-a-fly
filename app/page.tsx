@@ -9,9 +9,9 @@ import OverflowText from "./components/OverflowText";
 import { Timestamp } from "./components/components";
 import { DeviceCurrenlyPlaying, Buttons } from "./components/controlComponents";
 
-import { fetchLyrics, Musixmatch, Spotify, URIto } from "./lib/api";
+import { Musixmatch, Spotify, URIto } from "./lib/api";
 import { PlayerState, SpotifyWebhook, SongState, Lyrics, EditablePlaylist } from "./lib/types";
-import { parseLyricsBeuLyr, parseLyricsBasic } from "./lib/lyricParseHelper";
+import { findLyrics } from "./lib/lyricFinder";
 import collectState from "./lib/collectState";
 import { AddToView, LyricView, QueueView } from "./components/Views";
 
@@ -60,9 +60,7 @@ export default function Home() {
 				fetch("/api/session", {
 					method: "POST",
 					body: JSON.stringify({ session: token }),
-				}).then(() => {
-					window.location.href = window.location.href;
-				});
+				}).then(() => (window.location.href = window.location.href));
 				return;
 			}
 			const wsDealer = "dealer.spotify.com";
@@ -99,7 +97,7 @@ export default function Home() {
 			const input = atob(player_state.track.metadata["media.manifest"]);
 			const speakTagPattern = /<speak[^>]*>([\s\S]*?)<\/speak>/;
 			const match = input.match(speakTagPattern);
-			setLyricsText(<>{match ? match[1] : null}</>);
+			setLyricsText(match ? match[1] : undefined);
 			return;
 		}
 
@@ -112,11 +110,11 @@ export default function Home() {
 
 		const _msStep = 100;
 		const inveral = setInterval(() => {
+			if (player_state.is_paused) return clearInterval(inveral);
 			if (currentInveral.current !== inveral) {
 				clearInterval(currentInveral.current);
 				currentInveral.current = inveral as NodeJS.Timeout;
 			}
-			if (player_state.is_paused) return clearInterval(inveral);
 			const ms = new Date().getTime() - startTimestamp;
 			const songDuration = parseInt(player_state.duration);
 			curProgressMs.current = ms;
@@ -126,6 +124,7 @@ export default function Home() {
 			setProg(<div style={css} />);
 		}, _msStep);
 
+		// TODO: state does not refresh queeue if player_state.queue_revision is the same
 		if (lastTrackUri.current == trackUri) {
 			collectState(trackId, SpotifyClient, state).then((changedState) => {
 				console.log("Changed info: ", changedState);
@@ -155,15 +154,18 @@ export default function Home() {
 			console.log("Info: ", changedState);
 			document.title = `${changedState?.title} • ${changedState.artist}`;
 			setInfo(changedState);
-			getLyrics({
-				uri: changedState.uris.song,
-				title: changedState.title,
-				artist: changedState.artist,
-			}).then(({ source, type, data, copyright }) => {
+			findLyrics(
+				{ cache, SpotifyClient, mxmClient: mxmClient?.current },
+				{
+					uri: changedState.uris.song,
+					title: changedState.title,
+					artist: changedState.artist,
+				}
+			).then(({ source, type, data, copyright }) => {
 				if (data == "not-found") return setLyricsText("Can't find any lyrics");
 
 				lyricType.current = type;
-				const cpyAttribute = source == "Musixmatch" && copyright ? " • " + copyright : "";
+				const cpyAttribute = copyright ? "\n" + copyright : "";
 				lyrSource.current = source + cpyAttribute;
 				setLyrics(data);
 			});
@@ -171,78 +173,15 @@ export default function Home() {
 			//Cache next Song
 			if (!changedState?.queue[0]) return;
 			const { uri, name, artists } = changedState?.queue[0];
-			getLyrics({
-				uri: uri,
-				title: name,
-				artist: artists.items.map((a) => a.profile.name).join(" "),
-			});
+			findLyrics(
+				{ cache, SpotifyClient, mxmClient: mxmClient?.current },
+				{
+					uri: uri,
+					title: name,
+					artist: artists.items.map((a) => a.profile.name).join(" "),
+				}
+			);
 		});
-
-		async function getLyrics({
-			uri,
-			title,
-			artist,
-		}: {
-			uri: string;
-			title: string;
-			artist: string;
-		}) {
-			if (cache.current[uri]) return cache.current[uri];
-			const beuLyr = async () => {
-				if (!SpotifyClient) return;
-
-				const lyr = await fetchLyrics.beautifulLyrics(SpotifyClient, uri);
-				if (!lyr || !lyr.Type || lyr.Type == "Static") return;
-
-				const lyricLines = parseLyricsBeuLyr(lyr);
-				if (!lyricLines) return;
-
-				return {
-					source: "beautiful-lyrics",
-					type: lyr.Type as string,
-					data: lyricLines,
-				};
-			};
-
-			const mxmLyr = async () => {
-				if (!mxmClient.current) return;
-
-				const lyr = (await fetchLyrics.Musixmatch(mxmClient.current, title, artist)) as {
-					lyrics: any[];
-					copyright: string;
-				};
-				if (!lyr.lyrics || !lyr.lyrics[0]) return;
-
-				const lyricLines = parseLyricsBasic(lyr.lyrics);
-				return {
-					source: "Musixmatch",
-					type: "Line",
-					data: lyricLines,
-					copyright: lyr.copyright,
-				};
-			};
-
-			const netease = async () => {
-				const lyr3 = (await fetchLyrics.netease(`${title} ${artist}`)) as any;
-				if (!lyr3[0]) return;
-
-				const lyricLines = parseLyricsBasic(lyr3);
-				return { source: "netease", type: "Line", data: lyricLines };
-			};
-
-			type typeLyr = {
-				source: string;
-				type?: string;
-				data: Lyrics[] | string;
-				copyright?: string;
-			};
-			const notFound = { source: "text", data: "not-found" };
-			const lyr: typeLyr =
-				(await beuLyr()) || (await mxmLyr()) || (await netease()) || notFound;
-			cache.current[uri] = lyr;
-			return lyr;
-		}
-
 		return () => clearInterval(currentInveral.current);
 	}, [SpotifyClient, state]);
 
@@ -266,6 +205,7 @@ export default function Home() {
 			contentType={lyricType.current}
 			curProgressMs={curProgressMs.current}
 			SpotifyClient={SpotifyClient}
+			nextSong={curInfo?.queue[0]}
 		/>
 	) : (
 		lyricText
@@ -279,24 +219,7 @@ export default function Home() {
 	);
 	return (
 		<>
-			<div id="bg">
-				{curInfo && curInfo.image ? (
-					["Front", "Back", "BackCenter"].map((classes) => (
-						<Image
-							alt="bg"
-							key={classes}
-							className={classes}
-							width={0}
-							height={0}
-							priority={false}
-							unoptimized={true}
-							src={curInfo.image}
-						/>
-					))
-				) : (
-					<></>
-				)}
-			</div>
+			<Backdrop curInfo={curInfo} />
 
 			{addToModal ? (
 				<AddToView
@@ -309,12 +232,7 @@ export default function Home() {
 				<></>
 			)}
 
-			<div className="playback flex items-center py-3">
-				<div className="text-xs text-center w-full">
-					<span>PLAYING FROM</span>
-					<OverflowText>{curInfo?.contextName}</OverflowText>
-				</div>
-			</div>
+			<Context curInfo={curInfo} />
 			<div
 				id="side"
 				className="overflow-scroll">
@@ -330,45 +248,16 @@ export default function Home() {
 			</div>
 			<div className="track px-4">
 				<div className="flex items-center justify-between py-3 w-full">
-					<div className="playback flex items-center overflow-hidden">
-						{viewType !== undefined ? (
-							<Image
-								className="size-12 mr-2"
-								alt="alb-img"
-								width={64}
-								height={64}
-								priority={false}
-								unoptimized={true}
-								src={curInfo?.image || blank}
-							/>
-						) : (
-							<></>
-						)}
-						<div className="w-full">
-							<div className="playingTitle text-base w-full">
-								<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
-							</div>
-							<div className="grid grid-flow-col gap-1 w-fit items-center">
-								{curInfo?.isExplicit ? <Explicit /> : ""}
-								<OverflowText className="playingArtist text-xs">
-									{curInfo?.artist}
-								</OverflowText>
-							</div>
-						</div>
-					</div>
-					<button
-						className="fill-white pl-4"
-						onClick={() => {
-							const songUri = curInfo?.uris.song;
-							if (!songUri || !SpotifyClient) return;
-							SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
-								const playlists = data as EditablePlaylist;
-								console.log(playlists.data.me.editablePlaylists);
-								setAddToModal(playlists.data.me.editablePlaylists);
-							});
-						}}>
-						{curInfo?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
-					</button>
+					<SongInfo
+						curInfo={curInfo}
+						viewType={viewType}
+						err={err}
+					/>
+					<AddToButton
+						SpotifyClient={SpotifyClient}
+						curInfo={curInfo}
+						setAddToModal={setAddToModal}
+					/>
 				</div>
 				<div>
 					<div id="track">{prog}</div>
@@ -401,5 +290,101 @@ export default function Home() {
 				</div>
 			</div>
 		</>
+	);
+}
+
+function Backdrop({ curInfo }: { curInfo?: SongState }) {
+	return (
+		<div id="bg">
+			{curInfo && curInfo.image ? (
+				["Front", "Back", "BackCenter"].map((classes) => (
+					<Image
+						alt="bg"
+						key={classes}
+						className={classes}
+						width={0}
+						height={0}
+						priority={false}
+						unoptimized={true}
+						src={curInfo.image}
+					/>
+				))
+			) : (
+				<></>
+			)}
+		</div>
+	);
+}
+
+function Context({ curInfo }: { curInfo?: SongState }) {
+	return (
+		<div className="playback flex items-center py-3">
+			<div className="text-xs text-center w-full">
+				<span>PLAYING FROM</span>
+				<OverflowText>{curInfo?.contextName || "-"}</OverflowText>
+			</div>
+		</div>
+	);
+}
+
+function SongInfo({
+	viewType,
+	curInfo,
+	err,
+}: {
+	curInfo?: SongState;
+	viewType?: 0 | 1 | undefined;
+	err?: string;
+}) {
+	return (
+		<div className="playback flex items-center overflow-hidden">
+			{viewType !== undefined ? (
+				<Image
+					className="size-12 mr-2"
+					alt="alb-img"
+					width={64}
+					height={64}
+					priority={false}
+					unoptimized={true}
+					src={curInfo?.image || blank}
+				/>
+			) : (
+				<></>
+			)}
+			<div className="w-full h-12 content-center">
+				<div className="playingTitle text-base w-full">
+					<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
+				</div>
+				<div className="grid grid-flow-col gap-1 w-fit items-center">
+					{curInfo?.isExplicit ? <Explicit /> : ""}
+					<OverflowText className="playingArtist text-xs">{curInfo?.artist}</OverflowText>
+				</div>
+			</div>
+		</div>
+	);
+}
+
+function AddToButton({
+	SpotifyClient,
+	curInfo,
+	setAddToModal,
+}: {
+	SpotifyClient?: Spotify;
+	curInfo?: SongState;
+	setAddToModal: any;
+}) {
+	return (
+		<button
+			className="fill-white pl-4"
+			onClick={() => {
+				const songUri = curInfo?.uris.song;
+				if (!songUri || !SpotifyClient) return;
+				SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
+					const playlists = data as EditablePlaylist;
+					setAddToModal(playlists.data.me.editablePlaylists);
+				});
+			}}>
+			{curInfo?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
+		</button>
 	);
 }

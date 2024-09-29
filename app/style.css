@@ -138,7 +138,7 @@ body > #side {
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;
-	transition: scale 0.1s cubic-bezier(0.37, 0, 0.63, 1);
+	transition: .1s
 }
 
 div.extra > button.lineActive > span.sylInactive {

@@ -2,24 +2,23 @@ const api = "https://api.spotify.com/v1";
 const api_partner = "https://api-partner.spotify.com";
 const spclient_wg = "https://spclient.wg.spotify.com";
 
-var cache: { [key: string]: any } = {
-    colors: {},
-    metadata: {},
-    playlist: {},
+interface lyrLine {
+    StartTime: Number;
+    EndTime: Number;
+    Text: String;
 }
 
-const timeToSeconds = (timeStr: string) => {
+const timeToMs = (timeStr: string) => {
     let parts = timeStr.split(":");
     let minutes = parseFloat(parts[0]);
     let seconds = parseFloat(parts[1]);
     return (minutes * 60 + seconds) * 1000;
 }
 
-
-interface lyrLine {
-    StartTime: Number;
-    EndTime: Number;
-    Text: String;
+var cache: { [key: string]: any } = {
+    colors: {},
+    metadata: {},
+    playlist: {},
 }
 
 
@@ -45,6 +44,140 @@ export const URIto = {
     },
 };
 
+//#region Lyrics Get
+export const fetchLyrics = {
+    "beautifulLyrics": (Spotify: Spotify, uri: string) => {
+        if (uri.includes("local")) return
+        const id = URIto.id(uri)
+        const url = "https://beautiful-lyrics.socalifornian.live/lyrics/" + id;
+        return Spotify.makeRequest("/api/proxy/" + encodeURIComponent(url)) as any
+    },
+    "Musixmatch": (mxm: Musixmatch, title: string, artist: string) => {
+        return new Promise((res, rej) => {
+            mxm.searchSong(title, artist).then(async (searchRes: any) => {
+                if (!searchRes) return res([])
+                const searchBody = searchRes.message.body
+                if (!searchBody) return res([])
+                const firstResult = searchBody.track_list[0]
+                if (!firstResult) return res([])
+                const trackId = firstResult.track.track_id
+
+                const lyricRes = await mxm.getSubtitle(trackId) as any
+                const lyricBody = lyricRes.message.body
+                if (!lyricBody) return res([])
+                const lyric = lyricBody.subtitle
+                if (!lyric) return res([])
+
+                const lyr = lyric.subtitle_body.split("\n");
+                var result = lyr.map((line: string, index: number, array: any[]) => {
+                    let timeMatch = line.match(/\[(.*?)\]/);
+                    if (!timeMatch) return null;
+
+                    let startTime = timeToMs(timeMatch[1]);
+                    let text = line.replace(/\[.*?\]/, '').trim();
+
+
+                    let endTime;
+                    if (index < array.length - 1) {
+                        let nextTimeMatch =
+                            array[index + 1].match(/\[(.*?)\]/);
+                        if (nextTimeMatch)
+                            endTime = timeToMs(nextTimeMatch[1]);
+                        else endTime = Infinity;
+                    } else endTime = startTime;
+
+                    return {
+                        StartTime: startTime,
+                        EndTime: endTime,
+                        Text: text,
+                    };
+                });
+                result = result
+                    .filter((item: lyrLine) => item !== null)
+                return res({ lyrics: result, copyright: lyric.lyrics_copyright })
+            })
+        })
+    },
+    "netease": (identifier: string) => {
+        return new Promise((res, rej) => {
+            const url =
+                "https://music.xianqiao.wang/neteaseapiv2/search?limit=10&type=1&keywords=";
+            fetch("/api/proxy/" + encodeURIComponent(url + identifier))
+                .then((d) => d.json())
+                .then(async (data) => {
+                    if (!data.result || !data.result.songs) return res([]);
+                    const id = data.result.songs[0].id;
+
+                    const url = "https://music.xianqiao.wang/neteaseapiv2/lyric?id=";
+                    const lyricRes = await fetch("/api/proxy/" + encodeURIComponent(url + id)).then((d) => d.json())
+                    const lyr = lyricRes.lrc.lyric.split("\n");
+                    var result = lyr.map((line: string, index: number, array: any[]) => {
+                        let timeMatch = line.match(/\[(.*?)\]/);
+                        if (!timeMatch) return null;
+
+                        let startTime = timeToMs(timeMatch[1]);
+                        let text = line.replace(/\[.*?\]/, '').trim();
+
+
+                        let endTime;
+                        if (index < array.length - 1) {
+                            let nextTimeMatch =
+                                array[index + 1].match(/\[(.*?)\]/);
+                            if (nextTimeMatch)
+                                endTime = timeToMs(nextTimeMatch[1]);
+                            else endTime = Infinity;
+                        } else endTime = startTime;
+
+                        return {
+                            StartTime: startTime,
+                            EndTime: endTime,
+                            Text: text,
+                        };
+                    });
+                    result = result
+                        .filter((item: lyrLine) => item !== null)
+                        .filter(
+                            (item: lyrLine) =>
+                                !item.Text.includes("作词") &&
+                                !item.Text.includes("编曲") &&
+                                !item.Text.includes("作曲") &&
+                                !item.Text.includes("纯音乐，请欣赏")
+                        );
+
+                    return res(result);
+                });
+        });
+    },
+    "spotify": (Spotify: Spotify, uri: string) => {
+        return new Promise((res, rej) => {
+            Spotify.getLyrics(uri).then((lyr: any) => {
+
+                if (lyr.lyrics.syncType !== "LINE_SYNCED") return res([])
+                const resu = lyr.lyrics.lines.map((line: any, index: number, array: any[]) => {
+                    const startTime = line.startTimeMs
+
+                    let endTime;
+                    if (index < array.length - 1) {
+                        if (array[index + 1])
+                            endTime = array[index + 1].startTimeMs
+                        else endTime = Infinity;
+                    } else endTime = startTime;
+
+                    return {
+                        StartTime: startTime,
+                        EndTime: endTime,
+                        Text: line.words == "♪" ? "" : line.words
+                    };
+                })
+
+                res(resu)
+            }).catch(err => { res([]) })
+        })
+    }
+}
+
+
+//#region Musixmatch Class
 export class Musixmatch {
     user_token: string
     constructor() {
@@ -97,119 +230,7 @@ export class Musixmatch {
     }
 }
 
-export const fetchLyrics = {
-    "beautifulLyrics": (Spotify: Spotify, uri: string) => {
-        if (uri.includes("local")) return
-        const id = URIto.id(uri)
-        const url = "https://beautiful-lyrics.socalifornian.live/lyrics/" + id;
-        return Spotify.makeRequest("/api/proxy/" + encodeURIComponent(url)) as any
-    },
-    "Musixmatch": (mxm: Musixmatch, title: string, artist: string) => {
-        return new Promise((res, rej) => {
-            mxm.searchSong(title, artist).then(async (searchRes: any) => {
-                if (!searchRes) return res([])
-                const searchBody = searchRes.message.body
-                if (!searchBody) return res([])
-                const firstResult = searchBody.track_list[0]
-                if (!firstResult) return res([])
-                const trackId = firstResult.track.track_id
-
-                const lyricRes = await mxm.getSubtitle(trackId) as any
-                const lyricBody = lyricRes.message.body
-                if (!lyricBody) return res([])
-                const lyric = lyricBody.subtitle
-                if (!lyric) return res([])
-
-                const lyr = lyric.subtitle_body.split("\n");
-                var result = lyr.map((line: string, index: number, array: any[]) => {
-                    let timeMatch = line.match(/\[(.*?)\]/);
-                    if (!timeMatch) return null;
-
-                    let startTime = timeToSeconds(timeMatch[1]);
-                    let text = line.replace(/\[.*?\]/, '').trim();
-
-
-                    let endTime;
-                    if (index < array.length - 1) {
-                        let nextTimeMatch =
-                            array[index + 1].match(/\[(.*?)\]/);
-                        if (nextTimeMatch)
-                            endTime = timeToSeconds(nextTimeMatch[1]);
-                        else endTime = Infinity;
-                    } else endTime = startTime;
-
-                    return {
-                        StartTime: startTime,
-                        EndTime: endTime,
-                        Text: text,
-                    };
-                });
-                result = result
-                    .filter((item: lyrLine) => item !== null)
-                return res({ lyrics: result, copyright: lyric.lyrics_copyright })
-            })
-        })
-    },
-    "netease": (identifier: string) => {
-        return new Promise((res, rej) => {
-            const url =
-                "https://music.xianqiao.wang/neteaseapiv2/search?limit=10&type=1&keywords=";
-            fetch("/api/proxy/" + encodeURIComponent(url + identifier))
-                .then((d) => d.json())
-                .then(async (data) => {
-                    if (!data.result || !data.result.songs) return res([]);
-                    const id = data.result.songs[0].id;
-
-                    const url = "https://music.xianqiao.wang/neteaseapiv2/lyric?id=";
-                    const lyricRes = await fetch("/api/proxy/" + encodeURIComponent(url + id)).then((d) => d.json())
-                    const lyr = lyricRes.lrc.lyric.split("\n");
-                    var result = lyr.map((line: string, index: number, array: any[]) => {
-                        let timeMatch = line.match(/\[(.*?)\]/);
-                        if (!timeMatch) return null;
-
-                        let startTime = timeToSeconds(timeMatch[1]);
-                        let text = line.replace(/\[.*?\]/, '').trim();
-
-
-                        let endTime;
-                        if (index < array.length - 1) {
-                            let nextTimeMatch =
-                                array[index + 1].match(/\[(.*?)\]/);
-                            if (nextTimeMatch)
-                                endTime = timeToSeconds(nextTimeMatch[1]);
-                            else endTime = Infinity;
-                        } else endTime = startTime;
-
-                        return {
-                            StartTime: startTime,
-                            EndTime: endTime,
-                            Text: text,
-                        };
-                    });
-                    result = result
-                        .filter((item: lyrLine) => item !== null)
-                        .filter(
-                            (item: lyrLine) =>
-                                !item.Text.includes("作词") &&
-                                !item.Text.includes("编曲") &&
-                                !item.Text.includes("作曲") &&
-                                !item.Text.includes("纯音乐，请欣赏")
-                        );
-
-                    return res(result);
-                });
-        });
-    },
-    "spotify": (Spotify: Spotify, uri: string) => {
-        return Spotify.getLyrics(uri)
-    }
-}
-
-interface options {
-    method?: "GET" | "POST" | "PUT" | "DELETE";
-    withProxy?: boolean,
-    body?: string
-}
+//#region Sporify Class
 export class Spotify {
     session: {
         accessToken: string,
@@ -227,27 +248,13 @@ export class Spotify {
         };
         this.ready = () => console.error("no ready event");
         this.newSession();
-    }
-    newSession() {
-        return new Promise((resp, rej) => {
-            fetch("/api/session")
-                .then((data) => data.json())
-                .then((res) => {
-                    if (res.offline) return alert("Offline");
-                    if (res.accessToken == "") return alert("Error No Access Token");
 
-                    this.session = res;
-                    this.ready();
-                    console.info("Spotify session generated. Token: ", this.session.accessToken);
-                    return resp(res);
-                })
-                .catch((err) => {
-                    alert("err");
-                    console.log(err);
-                });
-        });
     }
-    async makeRequest(url: string, options?: options) {
+    async makeRequest(url: string, options?: {
+        method?: "GET" | "POST" | "PUT" | "DELETE";
+        withProxy?: boolean,
+        body?: string
+    }) {
         if (!this.session.accessToken) return { err: "Not Ready" };
         if (options?.withProxy) url = "/api/proxy/" + encodeURIComponent(url)
         return new Promise((resp, rej) => {
@@ -278,9 +285,7 @@ export class Spotify {
                         return;
                     }
                     if (err.response.status !== 401) {
-                        this.newSession().then(() => {
-                            window.location.href = window.location.href;
-                        });
+                        window.location.href = window.location.href;
                         return;
                     }
 
@@ -289,86 +294,27 @@ export class Spotify {
                 });
         });
     }
-    getPlayer() {
-        return this.makeRequest(api + "/me/player");
-    }
-    getPlaylist(uri: string) {
-        if (cache["playlist"][uri]) return cache["playlist"][uri]
 
-        const playlistUrl = URIto.url(uri);
-        if (!playlistUrl) return
-        const req = this.makeRequest(playlistUrl, { withProxy: true })
-        cache["playlist"][uri] = req
-        return req
-    }
-    getQueue() {
-        return this.makeRequest(api + "/me/player/queue", { withProxy: true });
-    }
-    decorateTrack(uris: string[]) {
-        const variables = encodeURIComponent(JSON.stringify({ uris }));
-        const extensions = encodeURIComponent(JSON.stringify({
-            persistedQuery: {
-                version: 1,
-                sha256Hash: "8b8d939c5d6da65a3f1b9fbaa96106b27fd6ff1ae7205846d9de3ffbee3298ee",
-            },
-        }));
-        const params = `operationName=decorateContextTracks&variables=${variables}&extensions=${extensions}`;
-        const url = `${api_partner}/pathfinder/v1/query?${params}`;
-        return this.makeRequest(url)
-    }
-    getLyrics(uri: string) {
-        const url = `${spclient_wg}/color-lyrics/v2/track/${uri}/image/noimagejustlyrics?format=json`;
-        return this.makeRequest(url, { withProxy: true });
-    }
-    async getColors(albSrc: string | undefined) {
-        const def = {
-            colorDark: { hex: "" },
-            colorLight: { hex: "" },
-        };
+    //#region Connection
+    newSession() {
+        return new Promise((resp, rej) => {
+            fetch("/api/session")
+                .then((data) => data.json())
+                .then((res) => {
+                    if (res.offline) return alert("Offline");
+                    if (res.accessToken == "") return alert("Error No Access Token");
 
-        if (!albSrc) return def
-
-        const url = albSrc.startsWith("spotify") ? (URIto.url(albSrc) as string) : albSrc;
-        if (!url) return def;
-
-        if (cache["colors"][albSrc]) return cache["colors"][albSrc]
-
-        const jsonToQuery = (t: Object) => encodeURIComponent(JSON.stringify(t));
-        const variables = { uris: [url] };
-        const ext = {
-            persistedQuery: {
-                version: 1,
-                sha256Hash: "86bdf61bb598ee07dc85d6c3456d9c88eb94f33178509ddc9b33fc9710aa9e9c",
-            },
-        };
-        const query =
-            `?operationName=fetchExtractedColors` +
-            `&variables=${jsonToQuery(variables)}` +
-            `&extensions=${jsonToQuery(ext)}`;
-        const req = this.makeRequest("/api/colors/" + query);
-        cache["colors"][albSrc] = req
-        return req
+                    this.session = res;
+                    this.ready();
+                    console.info("Spotify session generated. Token: ", this.session.accessToken);
+                    return resp(res);
+                })
+                .catch((err) => {
+                    alert("err");
+                    console.log(err);
+                });
+        });
     }
-    getTrack(id: string) {
-        return this.makeRequest(api + "/tracks/" + id, { withProxy: true });
-    }
-    getTrackMetadata(trackId: string) {
-        if (cache["metadata"][trackId]) return cache["metadata"][trackId]
-
-        const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-        let val = BigInt("0");
-        for (let i = 0; i < trackId.length; i++) {
-            let digit = alphabet.indexOf(trackId.charAt(i));
-            val = val * BigInt("62") + BigInt(digit);
-        }
-        const gid = val.toString(16).padStart(32, "0");
-        const url = `https://spclient.wg.spotify.com/metadata/4/track/${gid}`
-        const req = this.makeRequest(url, { withProxy: true });
-        cache["metadata"][trackId] = req
-        return req
-    }
-
     async connectWs(connection_id: string) {
         const deviceID = randomID();
         const accessToken = this.session.accessToken
@@ -421,6 +367,19 @@ export class Spotify {
         }
     }
 
+
+    //me
+    getPlayer() {
+        return this.makeRequest(api + "/me/player");
+    }
+    getQueue() {
+        return this.makeRequest(api + "/me/player/queue", { withProxy: true });
+    }
+    async SeekTo(position_ms: number) {
+        return this.makeRequest(api + "/me/player/seek?position_ms=" + position_ms.toString(), { method: "PUT" });
+    }
+
+    //#region Playlists
     async getEditablePlaylists(uris: string[], folderUri?: string) {
         const encode = (str: any) => encodeURIComponent(JSON.stringify(str))
         const varables = encode({ "offset": 0, "limit": 50, "textFilter": "", uris, folderUri })
@@ -429,6 +388,111 @@ export class Spotify {
         const url = `${api_partner}/pathfinder/v1/query?${params}`
         return this.makeRequest(url)
     }
+    getPlaylist(uri: string) {
+        if (cache["playlist"][uri]) return cache["playlist"][uri]
+
+        const playlistUrl = URIto.url(uri);
+        if (!playlistUrl) return
+        const req = this.makeRequest(playlistUrl, { withProxy: true })
+        cache["playlist"][uri] = req
+        return req
+    }
+    appendToPlaylist(playlistUri: string, trackUri: string) {
+        return this.makeRequest(api + `/playlists/${playlistUri}/tracks`, { method: "POST", body: JSON.stringify({ uris: [trackUri] }) });
+    }
+    removeFromPlaylist(playlistUri: string, trackUri: string) {
+        return this.makeRequest(api + `/playlists/${playlistUri}/tracks`, { method: "DELETE", body: JSON.stringify({ tracks: [{ uri: trackUri }] }) });
+    }
+
+    //#region Saved tracks (Liked)
+    saveTrack(trackUri: string) {
+        const id = URIto.id(trackUri)
+        return this.makeRequest(api + `/me/tracks`, { method: "PUT", body: JSON.stringify({ ids: [id] }) });
+    }
+    removeSavedTrack(trackUri: string) {
+        const id = URIto.id(trackUri)
+        return this.makeRequest(api + `/me/tracks`, { method: "DELETE", body: JSON.stringify({ ids: [id] }) });
+    }
+    trackContains(uri: string) {
+        const varables =
+            encodeURIComponent(JSON.stringify({ "uris": [uri] }));
+        const extensions = "%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22e4ed1f91a2cc5415befedb85acf8671dc1a4bf3ca1a5b945a6386101a22e28a6%22%7D%7D"
+        const query = `operationName=isCurated&variables=${varables}&extensions=${extensions}`
+        const url = `${api_partner}/pathfinder/v1/query?${query}`
+        return this.makeRequest(url)
+    }
+
+    //#region Tracks
+    getTrack(id: string) {
+        return this.makeRequest(api + "/tracks/" + id, { withProxy: true });
+    }
+    getTrackMetadata(trackId: string) {
+        if (cache["metadata"][trackId]) return cache["metadata"][trackId]
+
+        const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+        let val = BigInt("0");
+        for (let i = 0; i < trackId.length; i++) {
+            let digit = alphabet.indexOf(trackId.charAt(i));
+            val = val * BigInt("62") + BigInt(digit);
+        }
+        const gid = val.toString(16).padStart(32, "0");
+        const url = `https://spclient.wg.spotify.com/metadata/4/track/${gid}`
+        const req = this.makeRequest(url, { withProxy: true });
+        cache["metadata"][trackId] = req
+        return req
+    }
+
+    //#region Design
+    decorateTrack(uris: string[]) {
+        const variables = encodeURIComponent(JSON.stringify({ uris }));
+        const extensions = encodeURIComponent(JSON.stringify({
+            persistedQuery: {
+                version: 1,
+                sha256Hash: "8b8d939c5d6da65a3f1b9fbaa96106b27fd6ff1ae7205846d9de3ffbee3298ee",
+            },
+        }));
+        const params = `operationName=decorateContextTracks&variables=${variables}&extensions=${extensions}`;
+        const url = `${api_partner}/pathfinder/v1/query?${params}`;
+        return this.makeRequest(url)
+    }
+    getLyrics(uri: string) {
+        const id = URIto.id(uri)
+
+        const url = `${spclient_wg}/color-lyrics/v2/track/${id}/image/noimagejustlyrics?format=json`;
+        return this.makeRequest(url, { withProxy: true });
+    }
+    async getColors(albSrc: string | undefined) {
+        const def = {
+            colorDark: { hex: "" },
+            colorLight: { hex: "" },
+        };
+
+        if (!albSrc) return def
+
+        const url = albSrc.startsWith("spotify") ? (URIto.url(albSrc) as string) : albSrc;
+        if (!url) return def;
+
+        if (cache["colors"][albSrc]) return cache["colors"][albSrc]
+
+        const jsonToQuery = (t: Object) => encodeURIComponent(JSON.stringify(t));
+        const variables = { uris: [url] };
+        const ext = {
+            persistedQuery: {
+                version: 1,
+                sha256Hash: "86bdf61bb598ee07dc85d6c3456d9c88eb94f33178509ddc9b33fc9710aa9e9c",
+            },
+        };
+        const query =
+            `?operationName=fetchExtractedColors` +
+            `&variables=${jsonToQuery(variables)}` +
+            `&extensions=${jsonToQuery(ext)}`;
+        const req = this.makeRequest("/api/colors/" + query);
+        cache["colors"][albSrc] = req
+        return req
+    }
+
+    //#region Playback
     async SkipTo({ active_device_id, uri, uid }: { active_device_id: string | undefined, uri: string, uid: string }) {
         const raw = JSON.stringify({
             "command": {
@@ -448,24 +512,7 @@ export class Spotify {
         return this.makeRequest(_host + `/connect-state/v1/player/command/from/0/to/${active_device_id}`, { withProxy: true, method: "POST", body: raw });
     }
 
-    async SeekTo(position_ms: number) {
-        return this.makeRequest(api + "/me/player/seek?position_ms=" + position_ms.toString(), { method: "PUT" });
-    }
-    appendToPlaylist(playlistUri: string, trackUri: string) {
-        return this.makeRequest(api + `/playlists/${playlistUri}/tracks`, { method: "POST", body: JSON.stringify({ uris: [trackUri  ] }) });
-    }
-    removeFromPlaylist(playlistUri: string, trackUri: string) {
-        return this.makeRequest(api + `/playlists/${playlistUri}/tracks`, { method: "DELETE", body: JSON.stringify({ tracks: [{ uri: trackUri }] }) });
-    }
-    saveTrack(trackUri: string) {
-        const id = URIto.id(trackUri)
-        return this.makeRequest(api + `/me/tracks`, { method: "PUT", body: JSON.stringify({ ids: [id] }) });
-    }
-    removeSavedTrack(trackUri: string) {
-        const id = URIto.id(trackUri)
-        return this.makeRequest(api + `/me/tracks`, { method: "DELETE", body: JSON.stringify({ ids: [id] }) });
-    }
-    async playback(mode: "pause" | "play" | "skipNext" | "skipPrev" | "shuffle", options?: any) {
+    async playback(mode: "pause" | "play" | "skipNext" | "skipPrev" | "shuffle" | "repeat", options?: any) {
         switch (mode) {
             case "pause":
                 return this.makeRequest(api + "/me/player/pause", { method: "PUT" });
@@ -477,14 +524,10 @@ export class Spotify {
                 return this.makeRequest(api + "/me/player/previous", { method: "POST" });
             case "shuffle":
                 return this.makeRequest(api + `/me/player/shuffle?state=${options}`, { method: "PUT" });
+            case "repeat":
+                return this.makeRequest(api + `/me/player/repeat?state=${options}`, { method: "PUT" });
             default:
                 break;
         }
-    }
-
-    trackContains(uri: string) {
-        const id = URIto.id(uri)
-        const url = `${api}/me/tracks/contains?ids=${id}`
-        return this.makeRequest(url)
     }
 };

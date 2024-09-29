@@ -3,6 +3,10 @@ import { EditablePlaylist, Lyrics, NextTrack, SongState } from "../lib/types";
 import { Explicit, LeftArrow, Pinned, Saved } from "./icons";
 import { Spotify, URIto } from "../lib/api";
 import { ButtonWithFetchState } from "./components";
+import { CSSProperties, useRef } from "react";
+
+const blank =
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 
 export function AddToView({
 	addToModal,
@@ -36,48 +40,44 @@ export function AddToView({
 					return (
 						<button
 							key={item.item._uri}
-							className="flex justify-between p-2 w-full">
-							<div
-								className="flex items-center"
-								onClick={() => {
-									if (!SpotifyClient) return;
-									if (item.item.data.__typename == "Folder") {
-										const folderUri = item.item._uri;
-										if (!folderUri || !songUri || !SpotifyClient) return;
-										SpotifyClient.getEditablePlaylists(
-											[songUri],
-											folderUri
-										).then((data) => {
+							className="flex justify-between p-2 w-full"
+							onClick={() => {
+								if (!SpotifyClient) return;
+								if (item.item.data.__typename == "Folder") {
+									const folderUri = item.item._uri;
+									if (!folderUri || !songUri || !SpotifyClient) return;
+									SpotifyClient.getEditablePlaylists([songUri], folderUri).then(
+										(data) => {
 											const playlists = data as EditablePlaylist;
 											setAddToModal(playlists.data.me.editablePlaylists);
-										});
-									} else {
-										if (!songUri) return;
-										const addingToLiked =
-											item.item.data.uri == "spotify:collection:tracks";
-
-										const addMethod = addingToLiked
-											? SpotifyClient.saveTrack
-											: SpotifyClient.appendToPlaylist;
-										const removeMethod = addingToLiked
-											? SpotifyClient.removeSavedTrack
-											: SpotifyClient.removeFromPlaylist;
-
-										const method = (
-											item.curates ? removeMethod : addMethod
-										).bind(SpotifyClient);
-
-										if (addingToLiked) {
-											method(songUri, "").then(() =>
-												setAddToModal(undefined)
-											);
-										} else {
-											method(URIto.id(item.item.data.uri), songUri).then(() =>
-												setAddToModal(undefined)
-											);
 										}
+									);
+								} else {
+									if (!songUri) return;
+									const addingToLiked =
+										item.item.data.uri == "spotify:collection:tracks";
+
+									const addMethod = addingToLiked
+										? SpotifyClient.saveTrack
+										: SpotifyClient.appendToPlaylist;
+									const removeMethod = addingToLiked
+										? SpotifyClient.removeSavedTrack
+										: SpotifyClient.removeFromPlaylist;
+
+									const method = (item.curates ? removeMethod : addMethod).bind(
+										SpotifyClient
+									);
+
+									if (addingToLiked) {
+										method(songUri, "").then(() => setAddToModal(undefined));
+									} else {
+										method(URIto.id(item.item.data.uri), songUri).then(() =>
+											setAddToModal(undefined)
+										);
 									}
-								}}>
+								}
+							}}>
+							<div className="flex items-center">
 								<div className="size-12 mr-2 rounded-lg bg-neutral-700 flex items-center justify-center">
 									{src ? (
 										<Image
@@ -125,14 +125,21 @@ export function LyricView({
 	contentType,
 	lyricSource,
 	SpotifyClient,
+	nextSong,
 }: {
 	lyrcs: Lyrics[];
 	curProgressMs: number;
 	contentType?: string;
 	lyricSource: string;
 	SpotifyClient?: Spotify;
+	nextSong?: NextTrack;
 }) {
+	const Colors = useRef<any>();
 	if (typeof lyrcs == "string") return <>{lyrcs}</>;
+	SpotifyClient?.getColors(nextSong?.albumOfTrack.coverArt.sources[0].url).then((x) => {
+		Colors.current = x.data?.extractedColors[0];
+	});
+	// Colors["uri"] = next_tracks[0].uri;
 	return (
 		<>
 			{lyrcs.map((x) =>
@@ -143,7 +150,27 @@ export function LyricView({
 					SpotifyClient
 				)
 			)}
-			<span className="text-sm opacity-25">{"Lyrics provided by " + lyricSource}</span>
+			<span className="text-sm opacity-25 whitespace-break-spaces">
+				{"Lyrics provided by " + lyricSource}
+			</span>
+			<div
+				className="rounded-lg bg-[var(--light-color)] px-2"
+				style={
+					{
+						"--light-color": Colors.current?.colorLight?.hex,
+					} as CSSProperties
+				}>
+				{nextSong ? (
+					<QueueElement
+						title={nextSong?.name}
+						artist={nextSong?.artists.items.map((a) => a.profile.name).join(" ")}
+						isExplicit={nextSong.contentRating.label == "EXPLICIT"}
+						albImg={nextSong?.albumOfTrack.coverArt.sources[0].url || blank}
+					/>
+				) : (
+					<></>
+				)}
+			</div>
 		</>
 	);
 }
@@ -202,10 +229,10 @@ function parseLines(
 		const p = (startOffset / endOffset) * 100;
 		const perc = roundGrad(p);
 		if (isInstrumental) {
-			const dur = msEnd - curMs;
+			const instrumentalDuration = msEnd - curMs;
 			const insDots = [0, 1, 2].map((i) => {
-				const fullProg = (100 / 3) * i;
-				const alphaSigma = perc >= fullProg ? perc / 100 : 0;
+				const fullProg = i / 3;
+				const alphaSigma = perc >= fullProg ? perc / 100 - fullProg : 0;
 				const css = { "--alpha": `${alphaSigma}` };
 				return (
 					<span
@@ -214,7 +241,7 @@ function parseLines(
 					/>
 				);
 			});
-			const animate = dur < 1000 ? "animation-end" : "animation";
+			const animate = instrumentalDuration < 1000 ? "animation-end" : "animation";
 			const ins = <div className={`instrumentalText animation ${animate}`}>{insDots}</div>;
 			element = ins;
 			lineActive = " lineActive";

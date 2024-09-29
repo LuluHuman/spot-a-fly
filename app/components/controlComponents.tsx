@@ -1,15 +1,22 @@
-import { Devices, NextIcon, PauseIcon, PlayIcon, PrevIcon, Repeat, RepeatOne, Shuffle } from "./icons";
+import {
+	Devices,
+	NextIcon,
+	PauseIcon,
+	PlayIcon,
+	PrevIcon,
+	Repeat,
+	RepeatOne,
+	Shuffle,
+} from "./icons";
 import { SongState } from "../lib/types";
 import { Spotify } from "../lib/api";
 import { ButtonWithFetchState } from "./components";
-
-
 
 export function DeviceCurrenlyPlaying({ curInfo }: { curInfo?: SongState }) {
 	return (
 		<div className="my-3 flex items-center  *:mx-1 *:text-[#1ed760] *:fill-[#1ed760]">
 			<Devices />
-			<span>{curInfo?.deviceText}</span>
+			<span>{curInfo?.deviceText || "NO DEVICE"}</span>
 		</div>
 	);
 }
@@ -49,12 +56,23 @@ export function Buttons({
 				clickAction={() => SpotifyClient?.playback("skipNext")}>
 				<NextIcon />
 			</ButtonWithFetchState>
-			<button
+			<ButtonWithFetchState
 				className={`size-10 p-2 my-2 ${
 					curInfo?.options.repeating_context ? "fill-[#1ed760]" : "fill-white"
-				}`}>
+				}`}
+				clickAction={() => {
+					const states = ["off", "context", "track"];
+
+					const isRepeating = curInfo?.options.repeating_context;
+					if (!isRepeating) return SpotifyClient?.playback("repeat", states[1]);
+
+					const isRepeatingTrack = curInfo?.options.repeating_track;
+					const i = isRepeatingTrack ? 0 : 2;
+					
+					return SpotifyClient?.playback("repeat", states[i]);
+				}}>
 				{curInfo?.options.repeating_track ? <RepeatOne /> : <Repeat />}
-			</button>
+			</ButtonWithFetchState>
 		</>
 	);
 }

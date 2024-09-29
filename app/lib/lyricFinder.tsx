@@ -1,6 +1,85 @@
+import { fetchLyrics, Musixmatch, Spotify } from "./api";
 import { sylLine, Lyrics } from "./types";
 
-export function parseLyricsBeuLyr(lyr: any): Lyrics[] | undefined {
+export async function findLyrics(
+	{
+		cache,
+		SpotifyClient,
+		mxmClient,
+	}: {
+		cache: React.MutableRefObject<{
+			[key: string]: any;
+		}>;
+		SpotifyClient?: Spotify;
+		mxmClient?: Musixmatch;
+	},
+	{ uri, title, artist }: { uri: string; title: string; artist: string }
+) {
+	if (cache.current[uri]) return cache.current[uri];
+	const beuLyr = async () => {
+		if (!SpotifyClient) return;
+
+		const lyr = await fetchLyrics.beautifulLyrics(SpotifyClient, uri);
+		if (!lyr || !lyr.Type || lyr.Type == "Static") return;
+
+		const lyricLines = parseLyricsBeuLyr(lyr);
+		if (!lyricLines) return;
+
+		return {
+			source: "beautiful-lyrics",
+			type: lyr.Type as string,
+			data: lyricLines,
+		};
+	};
+
+	const mxmLyr = async () => {
+		if (!mxmClient) return;
+
+		const lyr = (await fetchLyrics.Musixmatch(mxmClient, title, artist)) as {
+			lyrics: any[];
+			copyright: string;
+		};
+		if (!lyr.lyrics || !lyr.lyrics[0]) return;
+
+		const lyricLines = parseLyricsBasic(lyr.lyrics);
+		return {
+			source: "Musixmatch",
+			type: "Line",
+			data: lyricLines,
+			copyright: lyr.copyright,
+		};
+	};
+
+	const spotify = async () => {
+		if (!SpotifyClient) return;
+
+		const lyr = await fetchLyrics.spotify(SpotifyClient, uri);
+		const lyricLines = parseLyricsBasic(lyr);
+		return { source: "Musixmatch (through Spotify)", type: "Line", data: lyricLines };
+	};
+
+	const netease = async () => {
+		const lyr3 = (await fetchLyrics.netease(`${title} ${artist}`)) as any;
+		if (!lyr3[0]) return;
+
+		const lyricLines = parseLyricsBasic(lyr3);
+		return { source: "netease", type: "Line", data: lyricLines };
+	};
+
+	type typeLyr = {
+		source: string;
+		type?: string;
+		data: Lyrics[] | string;
+		copyright?: string;
+	};
+	const notFound = { source: "text", data: "not-found" };
+	const lyr: typeLyr =
+		(await beuLyr()) || (await mxmLyr()) || (await netease()) || (await spotify()) || notFound;
+	cache.current[uri] = lyr;
+	return lyr;
+}
+
+function parseLyricsBeuLyr(lyr: any): Lyrics[] | undefined {
 	switch (lyr.Type) {
 		// case "Static":
 		// 	return (lyr.Lines as any[]).map((line: { Text: string }, i: number) => ({
@@ -37,7 +116,7 @@ export function parseLyricsBeuLyr(lyr: any): Lyrics[] | undefined {
 
 				const nextLyricLine = lyricLines[i + 1];
 				const instrumEnd = parseInt(nextLyricLine.StartTime) * 1000;
-				insertInstrumental(children, lyricEnd, instrumEnd);
+				InsertInstrumental(children, lyricEnd, instrumEnd);
 			}
 			return children;
 		case "Syllable": {
@@ -102,7 +181,7 @@ export function parseLyricsBeuLyr(lyr: any): Lyrics[] | undefined {
 				const nextLyricLine = lyricLines[i + 1];
 				const lyricEnd = lyricLine.Lead.EndTime * 1000;
 				const instrumEnd = parseInt(nextLyricLine.Lead.StartTime) * 1000;
-				insertInstrumental(children, lyricEnd, instrumEnd);
+				InsertInstrumental(children, lyricEnd, instrumEnd);
 			}
 
 			return children;
@@ -112,7 +191,7 @@ export function parseLyricsBeuLyr(lyr: any): Lyrics[] | undefined {
 	}
 }
 
-export function parseLyricsBasic(lyricLines: any) {
+function parseLyricsBasic(lyricLines: any) {
 	const children: Lyrics[] = [];
 	children.push({
 		msStart: 0,
@@ -139,7 +218,7 @@ export function parseLyricsBasic(lyricLines: any) {
 	return children;
 }
 
-function insertInstrumental(children: Lyrics[], start: number, end: number) {
+function InsertInstrumental(children: Lyrics[], start: number, end: number) {
 	const isEmpty = start != end;
 	const gap = end - start;
 	if (isEmpty && gap > 2500) {
