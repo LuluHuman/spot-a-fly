@@ -1,113 +1,405 @@
+"use client";
+
+import "./style.css";
 import Image from "next/image";
+import React, { useEffect, useRef, useState } from "react";
+
+import { AddToPlaylist, Explicit, LyricsIcon, Queue, Saved } from "./components/icons";
+import OverflowText from "./components/OverflowText";
+import { Timestamp } from "./components/components";
+import { DeviceCurrenlyPlaying, Buttons } from "./components/controlComponents";
+
+import { fetchLyrics, Musixmatch, Spotify, URIto } from "./lib/api";
+import { PlayerState, SpotifyWebhook, SongState, Lyrics, EditablePlaylist } from "./lib/types";
+import { parseLyricsBeuLyr, parseLyricsBasic } from "./lib/lyricParseHelper";
+import collectState from "./lib/collectState";
+import { AddToView, LyricView, QueueView } from "./components/Views";
+
+const blank =
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+	const [SpotifyClient, setSpotifyClient] = useState<Spotify>();
 
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+	const [curInfo, setInfo] = useState<SongState>();
+	const [addToModal, setAddToModal] =
+		useState<EditablePlaylist["data"]["me"]["editablePlaylists"]>();
 
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+	const [isPaused, setPaused] = useState<boolean>(true);
+	const [viewType, setViewType] = useState<0 | 1>();
+	const [state, setPlayerState] = useState<SpotifyWebhook["payloads"][0]["cluster"]>();
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+	const [prog, setProg] = useState<React.JSX.Element>(<div />);
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
+	const [lyrcs, setLyrics] = useState<Lyrics[]>();
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+	const [err, setErr] = useState<string | undefined>();
+
+	var cache = useRef<{ [key: string]: any }>({});
+
+	var mxmClient = useRef<Musixmatch>();
+	var lyrSource = useRef("");
+	var lastTrackUri = useRef("");
+
+	var lyricType = useRef<"Line" | "Syllable" | "Static">();
+	var currentInveral = useRef<NodeJS.Timeout>();
+	var curProgressMs = useRef<number>(0);
+	var curDurationMs = useRef<number>(0);
+
+	useEffect(() => setSpotifyClient(new Spotify()), []);
+	useEffect(() => {
+		if (!SpotifyClient) return;
+
+		mxmClient.current = new Musixmatch();
+
+		SpotifyClient.ready = () => {
+			if (!SpotifyClient.session.accessToken) return setErr("Error: No Spotify Acces Token");
+			if (SpotifyClient.session.isAnonymous) {
+				const token = prompt("sp_dc Access Token:");
+				fetch("/api/session", {
+					method: "POST",
+					body: JSON.stringify({ session: token }),
+				}).then(() => {
+					window.location.href = window.location.href;
+				});
+				return;
+			}
+			const wsDealer = "dealer.spotify.com";
+			const wsUrl = `wss://${wsDealer}/?access_token=${SpotifyClient.session.accessToken}`;
+			const spWs = new WebSocket(wsUrl);
+			spWs.onmessage = (event) => {
+				const data = JSON.parse(event.data) as SpotifyWebhook;
+				if (!data.headers) return;
+
+				const stfConnectionId = data.headers["Spotify-Connection-Id"];
+				if (!stfConnectionId) return setPlayerState(data.payloads[0].cluster);
+
+				SpotifyClient.connectWs(stfConnectionId).then((state) => {
+					console.info("Successfully connect to websocket");
+					setPlayerState(state);
+				});
+			};
+		};
+	}, [SpotifyClient]);
+
+	useEffect(() => {
+		if (currentInveral.current) clearInterval(currentInveral.current);
+		if (!SpotifyClient) return;
+
+		const player_state = (state?.player_state || state) as PlayerState;
+		if (!player_state || !state || !player_state.track) return;
+
+		if (Object.keys(cache.current).length > 5) cache.current = {};
+		console.info("State: ", state);
+		setPaused(player_state.is_paused);
+
+		const _hasNaration = player_state.track.provider.includes("narration");
+		if (_hasNaration) {
+			const input = atob(player_state.track.metadata["media.manifest"]);
+			const speakTagPattern = /<speak[^>]*>([\s\S]*?)<\/speak>/;
+			const match = input.match(speakTagPattern);
+			setLyricsText(<>{match ? match[1] : null}</>);
+			return;
+		}
+
+		const trackUri = player_state.track.uri;
+		const trackId = URIto.id(trackUri);
+
+		const timestamp = parseInt(player_state.timestamp);
+		const ms = parseInt(player_state.position_as_of_timestamp);
+		const startTimestamp = timestamp - ms;
+
+		const _msStep = 100;
+		const inveral = setInterval(() => {
+			if (currentInveral.current !== inveral) {
+				clearInterval(currentInveral.current);
+				currentInveral.current = inveral as NodeJS.Timeout;
+			}
+			if (player_state.is_paused) return clearInterval(inveral);
+			const ms = new Date().getTime() - startTimestamp;
+			const songDuration = parseInt(player_state.duration);
+			curProgressMs.current = ms;
+			curDurationMs.current = songDuration;
+
+			const css = { "--width": `${(ms / songDuration) * 100}%` } as React.CSSProperties;
+			setProg(<div style={css} />);
+		}, _msStep);
+
+		if (lastTrackUri.current == trackUri) {
+			collectState(trackId, SpotifyClient, state).then((changedState) => {
+				console.log("Changed info: ", changedState);
+				setInfo(changedState);
+			});
+			return;
+		}
+		lastTrackUri.current = trackUri;
+
+		setLyricsText(undefined);
+		setLyrics(undefined);
+
+		SpotifyClient.getColors(player_state.track.metadata.image_xlarge_url).then(
+			(fetchColours: any) => {
+				if (!fetchColours.data) {
+					document.body.style.setProperty("--dark-color", "");
+					document.body.style.setProperty("--light-color", "");
+					return;
+				}
+				const Colors = fetchColours.data.extractedColors[0];
+				document.body.style.setProperty("--dark-color", Colors.colorDark.hex);
+				document.body.style.setProperty("--light-color", Colors.colorLight.hex);
+			}
+		);
+
+		collectState(trackId, SpotifyClient, state).then((changedState: SongState) => {
+			console.log("Info: ", changedState);
+			document.title = `${changedState?.title} • ${changedState.artist}`;
+			setInfo(changedState);
+			getLyrics({
+				uri: changedState.uris.song,
+				title: changedState.title,
+				artist: changedState.artist,
+			}).then(({ source, type, data, copyright }) => {
+				if (data == "not-found") return setLyricsText("Can't find any lyrics");
+
+				lyricType.current = type;
+				const cpyAttribute = source == "Musixmatch" && copyright ? " • " + copyright : "";
+				lyrSource.current = source + cpyAttribute;
+				setLyrics(data);
+			});
+
+			//Cache next Song
+			if (!changedState?.queue[0]) return;
+			const { uri, name, artists } = changedState?.queue[0];
+			getLyrics({
+				uri: uri,
+				title: name,
+				artist: artists.items.map((a) => a.profile.name).join(" "),
+			});
+		});
+
+		async function getLyrics({
+			uri,
+			title,
+			artist,
+		}: {
+			uri: string;
+			title: string;
+			artist: string;
+		}) {
+			if (cache.current[uri]) return cache.current[uri];
+			const beuLyr = async () => {
+				if (!SpotifyClient) return;
+
+				const lyr = await fetchLyrics.beautifulLyrics(SpotifyClient, uri);
+				if (!lyr || !lyr.Type || lyr.Type == "Static") return;
+
+				const lyricLines = parseLyricsBeuLyr(lyr);
+				if (!lyricLines) return;
+
+				return {
+					source: "beautiful-lyrics",
+					type: lyr.Type as string,
+					data: lyricLines,
+				};
+			};
+
+			const mxmLyr = async () => {
+				if (!mxmClient.current) return;
+
+				const lyr = (await fetchLyrics.Musixmatch(mxmClient.current, title, artist)) as {
+					lyrics: any[];
+					copyright: string;
+				};
+				if (!lyr.lyrics || !lyr.lyrics[0]) return;
+
+				const lyricLines = parseLyricsBasic(lyr.lyrics);
+				return {
+					source: "Musixmatch",
+					type: "Line",
+					data: lyricLines,
+					copyright: lyr.copyright,
+				};
+			};
+
+			const netease = async () => {
+				const lyr3 = (await fetchLyrics.netease(`${title} ${artist}`)) as any;
+				if (!lyr3[0]) return;
+
+				const lyricLines = parseLyricsBasic(lyr3);
+				return { source: "netease", type: "Line", data: lyricLines };
+			};
+
+			type typeLyr = {
+				source: string;
+				type?: string;
+				data: Lyrics[] | string;
+				copyright?: string;
+			};
+			const notFound = { source: "text", data: "not-found" };
+			const lyr: typeLyr =
+				(await beuLyr()) || (await mxmLyr()) || (await netease()) || notFound;
+			cache.current[uri] = lyr;
+			return lyr;
+		}
+
+		return () => clearInterval(currentInveral.current);
+	}, [SpotifyClient, state]);
+
+	const defaultView = (
+		<div className="flex justify-center items-center h-full w-full px-6">
+			<Image
+				className="w-auto rounded-xl"
+				alt="alb-img"
+				width={0}
+				height={0}
+				priority={false}
+				unoptimized={true}
+				src={curInfo?.image || blank}
+			/>
+		</div>
+	);
+	const lyricsView = lyrcs ? (
+		<LyricView
+			lyrcs={lyrcs}
+			lyricSource={lyrSource.current}
+			contentType={lyricType.current}
+			curProgressMs={curProgressMs.current}
+			SpotifyClient={SpotifyClient}
+		/>
+	) : (
+		lyricText
+	);
+
+	const queueView = (
+		<QueueView
+			curInfo={curInfo}
+			SpotifyClient={SpotifyClient}
+		/>
+	);
+	return (
+		<>
+			<div id="bg">
+				{curInfo && curInfo.image ? (
+					["Front", "Back", "BackCenter"].map((classes) => (
+						<Image
+							alt="bg"
+							key={classes}
+							className={classes}
+							width={0}
+							height={0}
+							priority={false}
+							unoptimized={true}
+							src={curInfo.image}
+						/>
+					))
+				) : (
+					<></>
+				)}
+			</div>
+
+			{addToModal ? (
+				<AddToView
+					addToModal={addToModal}
+					setAddToModal={setAddToModal}
+					songUri={curInfo?.uris.song}
+					SpotifyClient={SpotifyClient}
+				/>
+			) : (
+				<></>
+			)}
+
+			<div className="playback flex items-center py-3">
+				<div className="text-xs text-center w-full">
+					<span>PLAYING FROM</span>
+					<OverflowText>{curInfo?.contextName}</OverflowText>
+				</div>
+			</div>
+			<div
+				id="side"
+				className="overflow-scroll">
+				{viewType === undefined ? defaultView : <></>}
+				{viewType == 0 ? (
+					<div className="extraContainer h-full">
+						<div className="extra p-3">{lyricsView}</div>
+					</div>
+				) : (
+					<></>
+				)}
+				{viewType == 1 ? <div className="px-3">{queueView}</div> : <></>}
+			</div>
+			<div className="track px-4">
+				<div className="flex items-center justify-between py-3 w-full">
+					<div className="playback flex items-center overflow-hidden">
+						{viewType !== undefined ? (
+							<Image
+								className="size-12 mr-2"
+								alt="alb-img"
+								width={64}
+								height={64}
+								priority={false}
+								unoptimized={true}
+								src={curInfo?.image || blank}
+							/>
+						) : (
+							<></>
+						)}
+						<div className="w-full">
+							<div className="playingTitle text-base w-full">
+								<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
+							</div>
+							<div className="grid grid-flow-col gap-1 w-fit items-center">
+								{curInfo?.isExplicit ? <Explicit /> : ""}
+								<OverflowText className="playingArtist text-xs">
+									{curInfo?.artist}
+								</OverflowText>
+							</div>
+						</div>
+					</div>
+					<button
+						className="fill-white pl-4"
+						onClick={() => {
+							const songUri = curInfo?.uris.song;
+							if (!songUri || !SpotifyClient) return;
+							SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
+								const playlists = data as EditablePlaylist;
+								console.log(playlists.data.me.editablePlaylists);
+								setAddToModal(playlists.data.me.editablePlaylists);
+							});
+						}}>
+						{curInfo?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
+					</button>
+				</div>
+				<div>
+					<div id="track">{prog}</div>
+					<div className="flex w-full justify-between *:text-xs">
+						<Timestamp ms={curProgressMs.current} />
+						<Timestamp ms={curDurationMs.current} />
+					</div>
+				</div>
+				<div className="flex justify-center items-center *:mx-1">
+					<Buttons
+						SpotifyClient={SpotifyClient}
+						isPaused={isPaused}
+						curInfo={curInfo}
+					/>
+				</div>
+				<div className="my-3 flex items-center justify-between">
+					<DeviceCurrenlyPlaying curInfo={curInfo} />
+					<div>
+						<button
+							className={viewType == 0 ? "fill-[#1ed760]" : "fill-white"}
+							onClick={() => setViewType((x) => (x == 0 ? undefined : 0))}>
+							<LyricsIcon />
+						</button>
+						<button
+							className={viewType == 1 ? "fill-[#1ed760]" : "fill-white"}
+							onClick={() => setViewType((x) => (x == 1 ? undefined : 1))}>
+							<Queue />
+						</button>
+					</div>
+				</div>
+			</div>
+		</>
+	);
 }
