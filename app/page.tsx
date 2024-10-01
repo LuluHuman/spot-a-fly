@@ -29,8 +29,6 @@ export default function Home() {
 	const [viewType, setViewType] = useState<0 | 1>();
 	const [state, setPlayerState] = useState<SpotifyWebhook["payloads"][0]["cluster"]>();
 
-	const [prog, setProg] = useState<React.JSX.Element>(<div />);
-
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
 	const [lyrcs, setLyrics] = useState<Lyrics[]>();
 
@@ -44,7 +42,7 @@ export default function Home() {
 
 	var lyricType = useRef<"Line" | "Syllable" | "Static">();
 	var currentInveral = useRef<NodeJS.Timeout>();
-	var curProgressMs = useRef<number>(0);
+	var [curProgressMs, setCurProgressMs] = useState<number>(0);
 	var curDurationMs = useRef<number>(0);
 
 	useEffect(() => setSpotifyClient(new Spotify()), []);
@@ -99,6 +97,9 @@ export default function Home() {
 		const ms = parseInt(player_state.position_as_of_timestamp);
 		const startTimestamp = timestamp - ms;
 
+		setCurProgressMs(ms);
+		const songDuration = parseInt(player_state.duration);
+		curDurationMs.current = songDuration;
 		const _msStep = 100;
 		const inveral = setInterval(() => {
 			if (player_state.is_paused) return clearInterval(inveral);
@@ -108,11 +109,8 @@ export default function Home() {
 			}
 			const ms = new Date().getTime() - startTimestamp;
 			const songDuration = parseInt(player_state.duration);
-			curProgressMs.current = ms;
+			setCurProgressMs(ms);
 			curDurationMs.current = songDuration;
-
-			const css = { "--width": `${(ms / songDuration) * 100}%` } as React.CSSProperties;
-			setProg(<div style={css} />);
 		}, _msStep);
 
 		// TODO: state does not refresh queeue if player_state.queue_revision is the same
@@ -194,7 +192,7 @@ export default function Home() {
 			lyrcs={lyrcs}
 			lyricSource={lyrSource.current}
 			contentType={lyricType.current}
-			curProgressMs={curProgressMs.current}
+			curProgressMs={curProgressMs}
 			SpotifyClient={SpotifyClient}
 			nextSong={curInfo?.queue[0]}
 		/>
@@ -251,9 +249,20 @@ export default function Home() {
 					/>
 				</div>
 				<div>
-					<div id="track">{prog}</div>
+
+					<div
+						id="track"
+						className="relative top-[-10px]">
+						<div
+							style={
+								{
+									"--width": `${(curProgressMs / curDurationMs.current) * 100}%`,
+								} as React.CSSProperties
+							}
+						/>
+					</div>
 					<div className="flex w-full justify-between *:text-xs">
-						<Timestamp ms={curProgressMs.current} />
+						<Timestamp ms={curProgressMs} />
 						<Timestamp ms={curDurationMs.current} />
 					</div>
 				</div>
@@ -311,8 +320,8 @@ function Context({ curInfo }: { curInfo?: SongState }) {
 	return (
 		<div className="playback flex items-center py-3">
 			<div className="text-xs text-center w-full">
-				<span>{curInfo?.context?.header}</span>
-				<OverflowText>{curInfo?.context?.name || "-"}</OverflowText>
+				<p>{curInfo?.context?.header}</p>
+				<p>{curInfo?.context?.name || "-"}</p>
 			</div>
 		</div>
 	);
@@ -346,6 +355,7 @@ function SongInfo({
 				<div className="playingTitle text-base w-full">
 					<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
 				</div>
+
 				<div className="grid grid-flow-col gap-1 w-fit items-center">
 					{curInfo?.isExplicit ? <Explicit /> : ""}
 					<OverflowText className="playingArtist text-xs">{curInfo?.artist}</OverflowText>

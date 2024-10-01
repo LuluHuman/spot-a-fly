@@ -7,6 +7,10 @@ const blank =
 export default async function collectState(trackId: string, SpotifyClient: Spotify, state: Cluster) {
     const player_state = (state?.player_state || state) as PlayerState;
 
+
+    // console.log(await SpotifyClient.getCanvas(player_state.track.uri));
+    
+
     const getQueue = async () => {
         const queueArr = []
 
@@ -122,6 +126,7 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
     const getLikedStatus = async () => {
         if (player_state.track.uri.includes("local")) return true
         const req = await SpotifyClient.trackContains(player_state.track.uri) as { data: { lookup: { data: { isCurated: boolean } }[] } }
+        if (!req.data) return false
         return req.data.lookup[0].data.isCurated
     }
 

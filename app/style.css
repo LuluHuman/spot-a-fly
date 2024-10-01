@@ -58,19 +58,6 @@ body > #side {
 	box-shadow: 0px 10px 5px #000, 0px 0px 5px #000;
 	border-radius: 5px 5px 0px 0px;
 }
-#track {
-	width: 100%;
-	height: 4px;
-	background: rgba(255, 255, 255, 0.3);
-	overflow: hidden;
-}
-#track > div {
-	width: var(--width);
-	height: 100%;
-	background: white;
-	border-radius: 25px;
-}
-
 .extraContainer {
 	width: -moz-available;
 	width: -webkit-fill-available;
@@ -138,7 +125,7 @@ body > #side {
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;
-	transition: .1s
+	transition: 0.1s;
 }
 
 div.extra > button.lineActive > span.sylInactive {
@@ -223,7 +210,7 @@ div.extra > button.lineActive > span.bg {
 .playingTitle {
 	font-weight: 700;
 	width: 100%;
-	overflow: hidden;
+	/* overflow: hidden; */
 	text-wrap: nowrap;
 }
 
@@ -244,16 +231,16 @@ div.extra > button.lineActive > span.bg {
 /*  */
 @keyframes onAnimate {
 	0% {
-		width: 15px;
-		height: 15px;
-	}
-	50% {
 		width: 10px;
 		height: 10px;
 	}
-	100% {
+	50% {
 		width: 15px;
 		height: 15px;
+	}
+	100% {
+		width: 10px;
+		height: 10px;
 	}
 }
 @keyframes animateEnd {
@@ -291,6 +278,7 @@ div.extra > button.lineActive > span.bg {
 		top: 0px;
 	}
 }
+
 .instrumentalText {
 	transition: 1s;
 	display: flex;
@@ -306,6 +294,7 @@ div.extra > button.lineActive > span.bg {
 	transition: 1s;
 	animation-duration: 2s;
 	background-color: rgba(255, 255, 255, calc(var(--alpha) + 0.1));
+	transition: 0.5s;
 }
 
 .instrumentalText.animation > span {
@@ -321,6 +310,7 @@ div.extra > button.lineActive > span.bg {
 	animation-name: animateEnd;
 	animation-duration: 1s;
 	animation-timing-function: cubic-bezier(0.47, 0, 0.74, 0.71);
+	animation-iteration-count: 1;
 }
 
 #bg {
@@ -377,4 +367,19 @@ img.BackCenter {
 .isLoading,
 button:active {
 	opacity: 0.5;
+}
+
+#track {
+	width: 100%;
+	height: 4px;
+	background: rgba(255, 255, 255, 0.3);
+	overflow: hidden;
+	border-radius: 25px;
+}
+
+#track > div {
+	width: var(--width);
+	height: 100%;
+	background: white;
+	border-radius: 25px;
 }

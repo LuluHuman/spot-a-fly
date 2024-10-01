@@ -53,8 +53,9 @@ export async function findLyrics(
 	const spotify = async () => {
 		if (!SpotifyClient) return;
 
-		const lyr = await fetchLyrics.spotify(SpotifyClient, uri) as Lyrics[]
-		if (lyr || !lyr[0]) return undefined;
+		const lyr = (await fetchLyrics.spotify(SpotifyClient, uri)) as Lyrics[];
+
+		if (!lyr || !lyr[0]) return undefined;
 
 		const lyricLines = parseLyricsBasic(lyr);
 		return { source: "Musixmatch (through Spotify)", type: "Line", data: lyricLines };
@@ -74,9 +75,23 @@ export async function findLyrics(
 		data: Lyrics[] | string;
 		copyright?: string;
 	};
-	const notFound = { source: "text", data: "not-found" };
-	const lyr: typeLyr =
-		(await beuLyr()) || (await mxmLyr()) || (await netease()) || (await spotify()) || notFound;
+
+	const find = async () => {
+		const beuLyrRes = await beuLyr();
+		if (beuLyrRes) return beuLyrRes;
+
+		const mxmLyrRes = await mxmLyr();
+		if (mxmLyrRes) return mxmLyrRes;
+
+		const spotifyRes = await spotify();
+		if (spotifyRes) return spotifyRes;
+
+		const neteaseRes = await netease();
+		if (neteaseRes) return neteaseRes;
+
+		return { source: "text", data: "not-found" };
+	};
+	const lyr: typeLyr = await find();
 	cache.current[uri] = lyr;
 	return lyr;
 }

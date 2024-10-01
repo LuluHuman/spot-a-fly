@@ -19,9 +19,10 @@ export default function OverflowText({
 	}, [children]);
 
 	useEffect(() => {
-		if (!(overflow > 2	)) return;
-		let isGoingForwards = true;
 		let breakMovement = false;
+		
+		if (overflow < 2) return;
+		let isGoingForwards = true;
 		let targetOffset = overflow;
 		let currentOffset = 0;
 

@@ -228,11 +228,14 @@ function parseLines(
 		const activeEnd = msEnd - msStart;
 		if (isInstrumental) {
 			const timeLeft = msEnd - curMs;
-			const durIns = actveStart / (activeEnd - 1000);
+
+			const subtract = ((activeEnd - 1000) % 2) + 1000;
+			const durInsPer = actveStart / (activeEnd - subtract);
+
 
 			const insDots = [0, 1, 2].map((i) => {
 				const startAt = i / 3;
-				const alphaSigma = durIns >= startAt ? durIns : 0;
+				const alphaSigma = durInsPer >= startAt ? durInsPer : 0;
 				const css = { "--alpha": `${alphaSigma}` };
 				return (
 					<span
@@ -241,7 +244,7 @@ function parseLines(
 					/>
 				);
 			});
-			const animate = timeLeft < 1000 ? "animation-end" : "animation";
+			const animate = timeLeft < subtract ? "animation-end" : "animation";
 			const ins = <div className={`instrumentalText animation ${animate}`}>{insDots}</div>;
 			element = ins;
 			lineActive = " lineActive";

@@ -56,7 +56,7 @@ export const fetchLyrics = {
         return new Promise((res, rej) => {
             mxm.searchSong(title, artist).then(async (searchRes: any) => {
                 if (!searchRes) return res([])
-                const searchBody = searchRes.message.body
+                const searchBody = searchRes?.message.body
                 if (!searchBody) return res([])
                 const firstResult = searchBody.track_list[0]
                 if (!firstResult) return res([])
@@ -285,7 +285,7 @@ export class Spotify {
                         return;
                     }
                     if (err.response.status !== 401) {
-                        window.location.href = window.location.href;
+                        alert("Token Expired")
                         return;
                     }
 
@@ -491,6 +491,17 @@ export class Spotify {
         cache["colors"][albSrc] = req
         return req
     }
+    // getCanvas(uri: string) {
+    //     const jsonToQuery = (t: Object) => encodeURIComponent(JSON.stringify(t));
+    //     const variables = jsonToQuery({ uris: [uri] })
+
+    //     const q = `?operationName=canvas` +
+    //         `&variables=${variables}` +
+    //         `&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%221b1e1915481c99f4349af88268c6b49a2b601cf0db7bca8749b5dd75088486fc%22%7D%7D`
+    //     const url = `${api_partner}/pathfinder/v1/query${q}`
+
+    //     return this.makeRequest(url)
+    // }
 
     //#region Playback
     async SkipTo({ active_device_id, uri, uid }: { active_device_id: string | undefined, uri: string, uid: string }) {
