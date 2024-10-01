@@ -77,24 +77,29 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
         const artistFromMetadata = trackMetadata.artist
             ? trackMetadata.artist.map((a) => a.name).join(", ")
             : undefined
-        return artistFromPlayer_State || artistFromMetadata || artistFromURI
+        return artistFromPlayer_State || artistFromMetadata || artistFromURI || player_state.track.metadata.artist_uri
     }
 
-    const getContextName = async () => {
+    const getContextName: () => Promise<SongState["context"]> = async () => {
         const subtitle = player_state.track.metadata.station_subtitle;
-        const description = player_state.context_metadata?.context_description + (subtitle ? " • " + subtitle : "")
-        if (description) return description
+
+        const descriptionType = player_state.context_uri?.split(":")[1]
+        const description = player_state.context_metadata?.context_description
+        if (subtitle) return { header: "DJ", name: subtitle }
+        if (description) return { header: `PLAYING FROM ${descriptionType.toUpperCase()}`, name: description }
 
         const uriParams = player_state.context_uri?.split(":");
-        if (uriParams && uriParams[3] == "collection") return "Liked Songs"
-        if (player_state.context_uri == "spotify:internal:local-files") return "Local Files"
 
-        if (!player_state.context_uri) return "UNKNOWN"
+        if (uriParams && uriParams[3] == "collection") return { header: "PLAYING FROM YOUR LIBRARY", name: "Liked Songs" }
+        if (player_state.context_uri == "spotify:internal:local-files") return { header: "PLAYING FROM YOUR LIBRARY", name: "Local Files" }
+
+        if (!player_state.context_uri) return { header: "PLAYING FROM", name: player_state.track.metadata.album_title }
+
         const req = SpotifyClient.getPlaylist(player_state.context_uri)
-        if (!req) return player_state.context_uri || "UNKNOWN"
+        if (!req) return { header: "PLAYING FROM", name: player_state.context_uri }
 
         const playlist = (await req as { name: string })
-        return (playlist.name || "") + (subtitle ? " • " + subtitle : "")
+        return { header: "PLAYING FROM PLAYLIST", name: playlist.name }
     }
 
     const title = trackMetadata.original_title || player_state.track.metadata.title
@@ -109,7 +114,7 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
                 ? trackMetadata.album.cover_group.image[0].file_id
                 : "");
         var albImgUrl = fallbackImage;
-        if (imageURIFromState) albImgUrl = isStateImageLink ? imageURIFromState : imageURLFromState;
+        if (imageURIFromState && imageURLFromState) albImgUrl = isStateImageLink ? imageURIFromState : imageURLFromState;
         return albImgUrl
     }
     const device = state?.devices ? state.devices[state.active_device_id] : undefined;
@@ -125,7 +130,7 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
         isSaved: await getLikedStatus(),
         deviceId: state.active_device_id,
         deviceText: device ? device.audio_output_device_info?.device_name || device.name : "",
-        contextName: await getContextName(),
+        context: await getContextName(),
         title,
         artist: getArtist(),
         image: getSongImage(),

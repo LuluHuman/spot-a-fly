@@ -224,15 +224,15 @@ function parseLines(
 	}
 	if (inRange) Active();
 	function Active() {
-		const startOffset = curMs - msStart;
-		const endOffset = msEnd - msStart;
-		const p = (startOffset / endOffset) * 100;
-		const perc = roundGrad(p);
+		const actveStart = curMs - msStart;
+		const activeEnd = msEnd - msStart;
 		if (isInstrumental) {
-			const instrumentalDuration = msEnd - curMs;
+			const timeLeft = msEnd - curMs;
+			const durIns = actveStart / (activeEnd - 1000);
+
 			const insDots = [0, 1, 2].map((i) => {
-				const fullProg = i / 3;
-				const alphaSigma = perc >= fullProg ? perc / 100 - fullProg : 0;
+				const startAt = i / 3;
+				const alphaSigma = durIns >= startAt ? durIns : 0;
 				const css = { "--alpha": `${alphaSigma}` };
 				return (
 					<span
@@ -241,13 +241,14 @@ function parseLines(
 					/>
 				);
 			});
-			const animate = instrumentalDuration < 1000 ? "animation-end" : "animation";
+			const animate = timeLeft < 1000 ? "animation-end" : "animation";
 			const ins = <div className={`instrumentalText animation ${animate}`}>{insDots}</div>;
 			element = ins;
 			lineActive = " lineActive";
 		}
 		if (showing == "Line") {
-			gradientProgress = perc;
+			const durLyrPercentage = roundGrad((actveStart / activeEnd) * 100);
+			gradientProgress = durLyrPercentage;
 			lineActive = " lineActive lineAnimate";
 			return;
 		}
@@ -344,7 +345,7 @@ export function QueueView({
 	return [
 		...NowPlaying,
 		...section(ProviderQueue, "Next in queue"),
-		...section(ProviderContext, "Next from: " + curInfo.contextName),
+		...section(ProviderContext, "Next from: " + curInfo.context.name),
 	];
 }
 

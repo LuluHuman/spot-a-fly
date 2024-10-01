@@ -261,7 +261,7 @@ div.extra > button.lineActive > span.bg {
 		width: 10px;
 		height: 10px;
 	}
-	10% {
+	20% {
 		width: 15px;
 		height: 15px;
 	}
@@ -303,7 +303,7 @@ div.extra > button.lineActive > span.bg {
 	border-radius: 25px;
 	margin: 2px;
 	display: inline-block;
-	transition: 0.1s;
+	transition: 1s;
 	animation-duration: 2s;
 	background-color: rgba(255, 255, 255, calc(var(--alpha) + 0.1));
 }

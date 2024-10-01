@@ -92,15 +92,6 @@ export default function Home() {
 		console.info("State: ", state);
 		setPaused(player_state.is_paused);
 
-		const _hasNaration = player_state.track.provider.includes("narration");
-		if (_hasNaration) {
-			const input = atob(player_state.track.metadata["media.manifest"]);
-			const speakTagPattern = /<speak[^>]*>([\s\S]*?)<\/speak>/;
-			const match = input.match(speakTagPattern);
-			setLyricsText(match ? match[1] : undefined);
-			return;
-		}
-
 		const trackUri = player_state.track.uri;
 		const trackId = URIto.id(trackUri);
 
@@ -320,8 +311,8 @@ function Context({ curInfo }: { curInfo?: SongState }) {
 	return (
 		<div className="playback flex items-center py-3">
 			<div className="text-xs text-center w-full">
-				<span>PLAYING FROM</span>
-				<OverflowText>{curInfo?.contextName || "-"}</OverflowText>
+				<span>{curInfo?.context?.header}</span>
+				<OverflowText>{curInfo?.context?.name || "-"}</OverflowText>
 			</div>
 		</div>
 	);

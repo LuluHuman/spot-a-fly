@@ -71,11 +71,14 @@ export interface TrackIndex {
 export interface Track {
     uri: string;
     uid: string;
-    metadata: Metadata | any;
+    metadata: Metadata
     provider: string;
 }
 
 export interface Metadata {
+    station_subtitle?: string
+    "source-loader"?: string
+    artist_name: string
     title: string;
     original_index: string;
     "actions.skipping_prev_past_track": string;
@@ -212,7 +215,10 @@ export interface SongState {
     isSaved: boolean;
     deviceId?: string
     deviceText?: string;
-    contextName: string;
+    context: {
+        header: string,
+        name: string
+    };
     title: string;
     artist: string;
     image: string;

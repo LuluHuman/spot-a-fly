@@ -53,7 +53,9 @@ export async function findLyrics(
 	const spotify = async () => {
 		if (!SpotifyClient) return;
 
-		const lyr = await fetchLyrics.spotify(SpotifyClient, uri);
+		const lyr = await fetchLyrics.spotify(SpotifyClient, uri) as Lyrics[]
+		if (lyr || !lyr[0]) return undefined;
+
 		const lyricLines = parseLyricsBasic(lyr);
 		return { source: "Musixmatch (through Spotify)", type: "Line", data: lyricLines };
 	};
