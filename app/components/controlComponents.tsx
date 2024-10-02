@@ -25,14 +25,17 @@ export function Buttons({
 	SpotifyClient,
 	isPaused,
 	curInfo,
+	setErrToast,
 }: {
 	SpotifyClient?: Spotify;
 	isPaused: boolean;
 	curInfo?: SongState;
+	setErrToast: any;
 }) {
 	return (
 		<>
 			<ButtonWithFetchState
+				setErrToast={setErrToast}
 				className={`size-10 p-2 my-2 ${
 					curInfo?.options.shuffling_context ? "fill-[#1ed760]" : "fill-white"
 				}`}
@@ -42,21 +45,25 @@ export function Buttons({
 				<Shuffle />
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				setErrToast={setErrToast}
 				className="size-12 p-2 my-2 fill-white"
 				clickAction={() => SpotifyClient?.playback("skipPrev")}>
 				<PrevIcon />
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				setErrToast={setErrToast}
 				className="size-16 bg-white p-5 rounded-full my-2"
 				clickAction={() => SpotifyClient?.playback(!isPaused ? "pause" : "play")}>
 				{isPaused ? <PauseIcon /> : <PlayIcon />}
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				setErrToast={setErrToast}
 				className="size-12 p-2 my-2 fill-white"
 				clickAction={() => SpotifyClient?.playback("skipNext")}>
 				<NextIcon />
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				setErrToast={setErrToast}
 				className={`size-10 p-2 my-2 ${
 					curInfo?.options.repeating_context ? "fill-[#1ed760]" : "fill-white"
 				}`}
@@ -68,7 +75,7 @@ export function Buttons({
 
 					const isRepeatingTrack = curInfo?.options.repeating_track;
 					const i = isRepeatingTrack ? 0 : 2;
-					
+
 					return SpotifyClient?.playback("repeat", states[i]);
 				}}>
 				{curInfo?.options.repeating_track ? <RepeatOne /> : <Repeat />}

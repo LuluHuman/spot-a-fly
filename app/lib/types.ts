@@ -76,6 +76,7 @@ export interface Track {
 }
 
 export interface Metadata {
+    "media.manifest"?: string;
     station_subtitle?: string
     "source-loader"?: string
     artist_name: string
@@ -211,6 +212,7 @@ export interface NextTracks {
 
 
 export interface SongState {
+    canvasUrl: string | undefined
     isExplicit: boolean;
     isSaved: boolean;
     deviceId?: string
@@ -231,7 +233,7 @@ export interface SongState {
     },
     uris: {
         album: string,
-        song: string
+        song: string,
     }
 }
 

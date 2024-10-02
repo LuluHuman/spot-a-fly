@@ -4,19 +4,36 @@ import { PlayerState, SongState, Cluster, NextTracks, NextTrack } from "./types"
 const blank =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 
-export default async function collectState(trackId: string, SpotifyClient: Spotify, state: Cluster) {
+var LastUpdate: any = {}
+var LastState = {
+    queue_revision: "",
+    trackUri: ""
+}
+
+export default async function collectState(
+    trackId: string,
+    SpotifyClient: Spotify,
+    state: Cluster,
+) {
     const player_state = (state?.player_state || state) as PlayerState;
 
+    const getCanvas = async () => {
+        const canvasReq = await SpotifyClient.getCanvas(player_state.track.uri) as any
+        const canvas = canvasReq.data.trackUnion.canvas
+        if (canvas) return canvas.url
+        return undefined
+    }
 
-    // console.log(await SpotifyClient.getCanvas(player_state.track.uri));
-    
 
     const getQueue = async () => {
+        if (player_state.queue_revision == LastState.queue_revision && LastUpdate.queue) return LastUpdate.queue
+        LastState.queue_revision = player_state.queue_revision
+
         const queueArr = []
 
         const next50Tracks = player_state.next_tracks.slice(0, 50)
         const uris = next50Tracks.map(nextTrack => nextTrack.uri).filter(uri => uri.startsWith("spotify:track"))
-        const queue = await SpotifyClient.decorateTrack(uris).then((data) => (data as unknown as NextTracks).data)
+        const queue = await SpotifyClient.decorateTracks(uris).then((data) => (data as unknown as NextTracks).data)
 
         if (!queue) return []
         let i_deco = 0
@@ -65,7 +82,8 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
         return queueArr
     }
 
-    const trackMetadata = await (async () => {
+    async function getTrackMetadata() {
+        LastState.trackUri == player_state.track.uri
         if (player_state.track.uri.includes("local")) return { album: undefined, original_title: undefined, explicit: undefined, artist: undefined }
         return (await SpotifyClient.getTrackMetadata(trackId)) as {
             album: any;
@@ -73,9 +91,12 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
             artist: { name: string }[];
             explicit: boolean;
         };
-    })()
+    }
+
+    const trackMetadata = player_state.track.uri == LastState.trackUri ? undefined : await getTrackMetadata()
 
     const getArtist = () => {
+        if (!trackMetadata) return LastUpdate.artist
         const artistFromURI = player_state.track.metadata.artist_uri ? decodeURIComponent(URIto.id(player_state.track.metadata.artist_uri)).replaceAll("+", " ") : null
         const artistFromPlayer_State = player_state.track.metadata.artist_name
         const artistFromMetadata = trackMetadata.artist
@@ -89,6 +110,8 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
 
         const descriptionType = player_state.context_uri?.split(":")[1]
         const description = player_state.context_metadata?.context_description
+
+        if (descriptionType == "search") return { header: "PLAYING FROM SEARCH", name: player_state.context_uri?.split(":")[2] }
         if (subtitle) return { header: "DJ", name: subtitle }
         if (description) return { header: `PLAYING FROM ${descriptionType.toUpperCase()}`, name: description }
 
@@ -106,17 +129,15 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
         return { header: "PLAYING FROM PLAYLIST", name: playlist.name }
     }
 
-    const title = trackMetadata.original_title || player_state.track.metadata.title
+    const title = trackMetadata?.original_title || player_state.track.metadata.title
 
     const getSongImage = () => {
+        if (!trackMetadata) return LastUpdate.image
         const imageURIFromState = player_state.track.metadata.image_large_url;
         const imageURLFromState = imageURIFromState ? URIto.url(imageURIFromState) : null
         const isStateImageLink = imageURIFromState ? imageURIFromState.startsWith("http") : null
         const fallbackImage =
-            "https://i.scdn.co/image/" +
-            (!(trackMetadata.album === undefined)
-                ? trackMetadata.album.cover_group.image[0].file_id
-                : "");
+            "https://i.scdn.co/image/" + trackMetadata.album?.cover_group.image[0].file_id
         var albImgUrl = fallbackImage;
         if (imageURIFromState && imageURLFromState) albImgUrl = isStateImageLink ? imageURIFromState : imageURLFromState;
         return albImgUrl
@@ -126,12 +147,13 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
     const getLikedStatus = async () => {
         if (player_state.track.uri.includes("local")) return true
         const req = await SpotifyClient.trackContains(player_state.track.uri) as { data: { lookup: { data: { isCurated: boolean } }[] } }
-        if (!req.data) return false
+        if (!req.data || !req.data.lookup[0].data) return LastUpdate.isSaved || false
         return req.data.lookup[0].data.isCurated
     }
 
     const changedState: SongState = {
-        isExplicit: trackMetadata.explicit || false,
+        canvasUrl: await getCanvas(),
+        isExplicit: (trackMetadata ? trackMetadata.explicit : LastUpdate.isExplicit) || false,
         isSaved: await getLikedStatus(),
         deviceId: state.active_device_id,
         deviceText: device ? device.audio_output_device_info?.device_name || device.name : "",
@@ -151,5 +173,6 @@ export default async function collectState(trackId: string, SpotifyClient: Spoti
     if (player_state.track.metadata["source-loader"])
         console.log(player_state.track.metadata["source-loader"]);
 
+    LastUpdate = changedState
     return changedState
 }

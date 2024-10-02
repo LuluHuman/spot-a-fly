@@ -13,11 +13,13 @@ export function AddToView({
 	setAddToModal,
 	songUri,
 	SpotifyClient,
+	setToast,
 }: {
 	addToModal: EditablePlaylist["data"]["me"]["editablePlaylists"];
 	setAddToModal: any;
 	songUri?: string;
 	SpotifyClient?: Spotify;
+	setToast: any;
 }) {
 	return (
 		<div className="fixed w-dvw h-dvh bg-neutral-900 z-10 px-4">
@@ -70,9 +72,16 @@ export function AddToView({
 
 									if (addingToLiked) {
 										method(songUri, "").then(() => setAddToModal(undefined));
+										setToast(
+											`${item.curates ? "Removed" : "Added"} to Liked Songs`
+										);
 									} else {
 										method(URIto.id(item.item.data.uri), songUri).then(() =>
 											setAddToModal(undefined)
+										);
+
+										setToast(
+											`${item.curates ? "Removed" : "Added"} to playlist`
 										);
 									}
 								}
@@ -232,7 +241,6 @@ function parseLines(
 			const subtract = ((activeEnd - 1000) % 2) + 1000;
 			const durInsPer = actveStart / (activeEnd - subtract);
 
-
 			const insDots = [0, 1, 2].map((i) => {
 				const startAt = i / 3;
 				const alphaSigma = durInsPer >= startAt ? durInsPer : 0;
@@ -309,7 +317,7 @@ export function QueueView({
 		/>,
 	];
 
-	const ProviderContext = curInfo.queue.filter(({ provider }) => provider == "context");
+	const ProviderContext = curInfo.queue.filter(({ provider }) => provider !== "queue");
 	const ProviderQueue = curInfo.queue.filter(({ provider }) => provider == "queue");
 	const section = (q: NextTrack[], label: string) =>
 		q.length == 0
@@ -333,13 +341,14 @@ export function QueueView({
 									.join(", ")}
 								isExplicit={queueItem.contentRating.label == "EXPLICIT"}
 								key={label + "-" + i}
-								clickAction={() =>
-									SpotifyClient?.SkipTo({
+								clickAction={() => {
+									if (!queueItem.uri.startsWith("spotify:track")) return;
+									return SpotifyClient?.SkipTo({
 										active_device_id: curInfo.deviceId,
 										uri: queueItem.uri,
 										uid: queueItem.uid,
-									})
-								}
+									});
+								}}
 							/>
 						);
 					}),

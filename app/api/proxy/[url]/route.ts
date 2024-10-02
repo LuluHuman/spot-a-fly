@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { wrapper } from 'axios-cookiejar-support';
+import { NextRequest } from 'next/server';
 import { CookieJar } from 'tough-cookie';
 
 async function handler(
-    req: Request,
+    req: NextRequest,
     { params }: { params: { url: string } }
 ) {
     try {
@@ -20,7 +21,8 @@ async function handler(
                 Accept: "application/json",
                 "Content-Type": req.headers.get("Content-Type")
             },
-            data: data == "{}" ? undefined : data
+            data: data == "{}" ? undefined : data,
+            params: req.nextUrl.searchParams,
         })
 
         return Response.json(request.data, { status: request.status })

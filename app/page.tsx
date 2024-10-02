@@ -33,6 +33,7 @@ export default function Home() {
 	const [lyrcs, setLyrics] = useState<Lyrics[]>();
 
 	const [err, setErr] = useState<string | undefined>();
+	const [toast, setToast] = useState<string | undefined>();
 
 	var cache = useRef<{ [key: string]: any }>({});
 
@@ -86,6 +87,17 @@ export default function Home() {
 		const player_state = (state?.player_state || state) as PlayerState;
 		if (!player_state || !state || !player_state.track) return;
 
+		if (player_state.track.metadata["media.manifest"]) {
+			const input = atob(player_state.track.metadata["media.manifest"]);
+			const speakTagPattern = /<speak[^>]*>([\s\S]*?)<\/speak>/;
+			const match = input.match(speakTagPattern);
+			setLyrics(undefined);
+			setLyricsText(
+				match ? match[1].replace(/<entity[^>]*>(.*?)<\/entity>/g, "$1") : undefined
+			);
+			return;
+		}
+
 		if (Object.keys(cache.current).length > 5) cache.current = {};
 		console.info("State: ", state);
 		setPaused(player_state.is_paused);
@@ -113,7 +125,6 @@ export default function Home() {
 			curDurationMs.current = songDuration;
 		}, _msStep);
 
-		// TODO: state does not refresh queeue if player_state.queue_revision is the same
 		if (lastTrackUri.current == trackUri) {
 			collectState(trackId, SpotifyClient, state).then((changedState) => {
 				console.log("Changed info: ", changedState);
@@ -151,7 +162,7 @@ export default function Home() {
 					artist: changedState.artist,
 				}
 			).then(({ source, type, data, copyright }) => {
-				if (data == "not-found") return setLyricsText("Can't find any lyrics");
+				if (data == "not-found") return setLyricsText(undefined);
 
 				lyricType.current = type;
 				const cpyAttribute = copyright ? "\n" + copyright : "";
@@ -216,6 +227,7 @@ export default function Home() {
 					setAddToModal={setAddToModal}
 					songUri={curInfo?.uris.song}
 					SpotifyClient={SpotifyClient}
+					setToast={setToast}
 				/>
 			) : (
 				<></>
@@ -225,11 +237,23 @@ export default function Home() {
 			<div
 				id="side"
 				className="overflow-scroll">
+				{toast ? (
+					<Toast
+						toast={toast}
+						setToast={setToast}
+					/>
+				) : (
+					<></>
+				)}
 				{viewType === undefined ? defaultView : <></>}
 				{viewType == 0 ? (
-					<div className="extraContainer h-full">
-						<div className="extra p-3">{lyricsView}</div>
-					</div>
+					lyricsView ? (
+						<div className="extraContainer h-full">
+							<div className="extra p-3">{lyricsView}</div>
+						</div>
+					) : (
+						defaultView
+					)
 				) : (
 					<></>
 				)}
@@ -249,7 +273,6 @@ export default function Home() {
 					/>
 				</div>
 				<div>
-
 					<div
 						id="track"
 						className="relative top-[-10px]">
@@ -271,6 +294,7 @@ export default function Home() {
 						SpotifyClient={SpotifyClient}
 						isPaused={isPaused}
 						curInfo={curInfo}
+						setErrToast={setToast}
 					/>
 				</div>
 				<div className="my-3 flex items-center justify-between">
@@ -293,8 +317,29 @@ export default function Home() {
 	);
 }
 
-function Backdrop({ curInfo }: { curInfo?: SongState }) {
+function Toast({ toast, setToast }: { toast: string; setToast: any }) {
+	if (toast) {
+		setTimeout(() => setToast(undefined), 1000);
+	}
+
 	return (
+		<div className="fixed bottom-0 w-full flex justify-center p-10 z-10 transition ">
+			<span className="bg-white text-black p-2 rounded-lg">{toast}</span>
+		</div>
+	);
+}
+
+function Backdrop({ curInfo }: { curInfo?: SongState }) {
+	return curInfo?.canvasUrl ? (
+		<div className="absolute z-[-1] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
+			<video
+				src={curInfo?.canvasUrl}
+				loop
+				autoPlay
+				className="blur-md h-full saturate-200 brightness-50 max-w-none"
+			/>
+		</div>
+	) : (
 		<div id="bg">
 			{curInfo && curInfo.image ? (
 				["Front", "Back", "BackCenter"].map((classes) => (

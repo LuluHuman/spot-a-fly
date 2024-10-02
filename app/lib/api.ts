@@ -277,22 +277,39 @@ export class Spotify {
                 })
                 .catch((err) => {
                     if (!err.response) {
-                        resp(err);
+                        resp(undefined);
                         return;
                     }
                     if (err.response.status == 404) {
-                        resp(err);
+                        resp({ err: "Not Found" });
                         return;
                     }
                     if (err.response.status !== 401) {
                         alert("Token Expired")
+                        resp({ err: "Token Expired" })
                         return;
                     }
 
-                    resp(err);
-                    console.log(err);
+                    resp({ err });
+                    console.log({ err });
                 });
         });
+    }
+    operation(operationName: "editablePlaylists" | "isCurated" | "decorateContextTracks" | "fetchExtractedColors" | "canvas", variables: any) {
+        const encode = (str: any) => encodeURIComponent(JSON.stringify(str))
+        const hashes = {
+            "editablePlaylists": "acb5390f2929bdcad4c6afe1c08bdbe09375f50fdb29d75244f67e9aee77ebc4",
+            "isCurated": "e4ed1f91a2cc5415befedb85acf8671dc1a4bf3ca1a5b945a6386101a22e28a6",
+            "decorateContextTracks": "8b8d939c5d6da65a3f1b9fbaa96106b27fd6ff1ae7205846d9de3ffbee3298ee",
+            "fetchExtractedColors": "86bdf61bb598ee07dc85d6c3456d9c88eb94f33178509ddc9b33fc9710aa9e9c",
+            "canvas": "1b1e1915481c99f4349af88268c6b49a2b601cf0db7bca8749b5dd75088486fc"
+        }
+
+        const varables = encode(variables)
+        const ext = encode({ "persistedQuery": { "version": 1, "sha256Hash": hashes[operationName] } })
+        const params = `operationName=${operationName}&variables=${varables}&extensions=${ext}`
+        const url = `${api_partner}/pathfinder/v1/query?${params}`
+        return this.makeRequest(url)
     }
 
     //#region Connection
@@ -369,24 +386,16 @@ export class Spotify {
 
 
     //me
-    getPlayer() {
-        return this.makeRequest(api + "/me/player");
-    }
-    getQueue() {
-        return this.makeRequest(api + "/me/player/queue", { withProxy: true });
-    }
+    getPlayer() { return this.makeRequest(api + "/me/player") }
+    getQueue() { return this.makeRequest(api + "/me/player/queue") }
     async SeekTo(position_ms: number) {
         return this.makeRequest(api + "/me/player/seek?position_ms=" + position_ms.toString(), { method: "PUT" });
     }
 
     //#region Playlists
     async getEditablePlaylists(uris: string[], folderUri?: string) {
-        const encode = (str: any) => encodeURIComponent(JSON.stringify(str))
-        const varables = encode({ "offset": 0, "limit": 50, "textFilter": "", uris, folderUri })
-        const ext = encode({ "persistedQuery": { "version": 1, "sha256Hash": "acb5390f2929bdcad4c6afe1c08bdbe09375f50fdb29d75244f67e9aee77ebc4" } })
-        const params = `operationName=editablePlaylists&variables=${varables}&extensions=${ext}`
-        const url = `${api_partner}/pathfinder/v1/query?${params}`
-        return this.makeRequest(url)
+        const varables = { "offset": 0, "limit": 50, "textFilter": "", uris, folderUri }
+        return this.operation("editablePlaylists", varables)
     }
     getPlaylist(uri: string) {
         if (cache["playlist"][uri]) return cache["playlist"][uri]
@@ -414,18 +423,12 @@ export class Spotify {
         return this.makeRequest(api + `/me/tracks`, { method: "DELETE", body: JSON.stringify({ ids: [id] }) });
     }
     trackContains(uri: string) {
-        const varables =
-            encodeURIComponent(JSON.stringify({ "uris": [uri] }));
-        const extensions = "%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%22e4ed1f91a2cc5415befedb85acf8671dc1a4bf3ca1a5b945a6386101a22e28a6%22%7D%7D"
-        const query = `operationName=isCurated&variables=${varables}&extensions=${extensions}`
-        const url = `${api_partner}/pathfinder/v1/query?${query}`
-        return this.makeRequest(url)
+        const varables = { "uris": [uri] }
+        return this.operation("isCurated", varables)
     }
 
     //#region Tracks
-    getTrack(id: string) {
-        return this.makeRequest(api + "/tracks/" + id, { withProxy: true });
-    }
+    getTrack(id: string) { return this.makeRequest(api + "/tracks/" + id, { withProxy: true }); }
     getTrackMetadata(trackId: string) {
         if (cache["metadata"][trackId]) return cache["metadata"][trackId]
 
@@ -444,18 +447,8 @@ export class Spotify {
     }
 
     //#region Design
-    decorateTrack(uris: string[]) {
-        const variables = encodeURIComponent(JSON.stringify({ uris }));
-        const extensions = encodeURIComponent(JSON.stringify({
-            persistedQuery: {
-                version: 1,
-                sha256Hash: "8b8d939c5d6da65a3f1b9fbaa96106b27fd6ff1ae7205846d9de3ffbee3298ee",
-            },
-        }));
-        const params = `operationName=decorateContextTracks&variables=${variables}&extensions=${extensions}`;
-        const url = `${api_partner}/pathfinder/v1/query?${params}`;
-        return this.makeRequest(url)
-    }
+    getCanvas(uri: string) { return this.operation("canvas", { uri }) }
+    decorateTracks(uris: string[]) { return this.operation("decorateContextTracks", { uris }) }
     getLyrics(uri: string) {
         const id = URIto.id(uri)
 
@@ -463,11 +456,7 @@ export class Spotify {
         return this.makeRequest(url, { withProxy: true });
     }
     async getColors(albSrc: string | undefined) {
-        const def = {
-            colorDark: { hex: "" },
-            colorLight: { hex: "" },
-        };
-
+        const def = { colorDark: { hex: "" }, colorLight: { hex: "" }, };
         if (!albSrc) return def
 
         const url = albSrc.startsWith("spotify") ? (URIto.url(albSrc) as string) : albSrc;
@@ -475,33 +464,12 @@ export class Spotify {
 
         if (cache["colors"][albSrc]) return cache["colors"][albSrc]
 
-        const jsonToQuery = (t: Object) => encodeURIComponent(JSON.stringify(t));
-        const variables = { uris: [url] };
-        const ext = {
-            persistedQuery: {
-                version: 1,
-                sha256Hash: "86bdf61bb598ee07dc85d6c3456d9c88eb94f33178509ddc9b33fc9710aa9e9c",
-            },
-        };
-        const query =
-            `?operationName=fetchExtractedColors` +
-            `&variables=${jsonToQuery(variables)}` +
-            `&extensions=${jsonToQuery(ext)}`;
-        const req = this.makeRequest("/api/colors/" + query);
+        const req = this.operation("fetchExtractedColors", { uris: [url] })
         cache["colors"][albSrc] = req
+
         return req
+
     }
-    // getCanvas(uri: string) {
-    //     const jsonToQuery = (t: Object) => encodeURIComponent(JSON.stringify(t));
-    //     const variables = jsonToQuery({ uris: [uri] })
-
-    //     const q = `?operationName=canvas` +
-    //         `&variables=${variables}` +
-    //         `&extensions=%7B%22persistedQuery%22%3A%7B%22version%22%3A1%2C%22sha256Hash%22%3A%221b1e1915481c99f4349af88268c6b49a2b601cf0db7bca8749b5dd75088486fc%22%7D%7D`
-    //     const url = `${api_partner}/pathfinder/v1/query${q}`
-
-    //     return this.makeRequest(url)
-    // }
 
     //#region Playback
     async SkipTo({ active_device_id, uri, uid }: { active_device_id: string | undefined, uri: string, uid: string }) {
