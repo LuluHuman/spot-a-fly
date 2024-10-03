@@ -11,7 +11,6 @@ export async function GET() {
         const client = wrapper(axios.create({ jar }));
         const tokenReq = await client.get(tokenURL)
         return Response.json(tokenReq.data);
-    } catch (err: any) {
-        return Response.json({ err }, { status: err.status || 500 })
-    }
+
+    } catch (err: any) { return Response.json({ err }, { status: err.status || 500 }) }
 }

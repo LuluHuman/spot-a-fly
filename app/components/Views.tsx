@@ -7,6 +7,7 @@ import { CSSProperties, useRef } from "react";
 
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
+const roundGrad = (p: number) => (p > 100 ? 100 : p < 0 ? 0 : Number.isNaN(p) ? 100 : p);
 
 export function AddToView({
 	addToModal,
@@ -73,7 +74,9 @@ export function AddToView({
 									if (addingToLiked) {
 										method(songUri, "").then(() => setAddToModal(undefined));
 										setToast(
-											`${item.curates ? "Removed" : "Added"} to Liked Songs`
+											`${
+												item.curates ? "Removed from" : "Added to"
+											} Liked Songs`
 										);
 									} else {
 										method(URIto.id(item.item.data.uri), songUri).then(() =>
@@ -81,7 +84,7 @@ export function AddToView({
 										);
 
 										setToast(
-											`${item.curates ? "Removed" : "Added"} to playlist`
+											`${item.curates ? "Removed from" : "Added to"} playlist`
 										);
 									}
 								}
@@ -128,15 +131,15 @@ export function AddToView({
 	);
 }
 
-export function LyricView({
-	lyrcs,
+function LyricView({
+	lyrics: lyrcs,
 	curProgressMs,
 	contentType,
 	lyricSource,
 	SpotifyClient,
 	nextSong,
 }: {
-	lyrcs: Lyrics[];
+	lyrics: Lyrics[];
 	curProgressMs: number;
 	contentType?: string;
 	lyricSource: string;
@@ -148,7 +151,7 @@ export function LyricView({
 	SpotifyClient?.getColors(nextSong?.albumOfTrack.coverArt.sources[0].url).then((x) => {
 		Colors.current = x.data?.extractedColors[0];
 	});
-	// Colors["uri"] = next_tracks[0].uri;
+
 	return (
 		<>
 			{lyrcs.map((x) =>
@@ -170,7 +173,7 @@ export function LyricView({
 					} as CSSProperties
 				}>
 				{nextSong ? (
-					<QueueElement
+					<SongCard
 						title={nextSong?.name}
 						artist={nextSong?.artists.items.map((a) => a.profile.name).join(" ")}
 						isExplicit={nextSong.contentRating.label == "EXPLICIT"}
@@ -289,17 +292,7 @@ function parseLines(
 	);
 }
 
-function roundGrad(p: number) {
-	return p > 100 ? 100 : p < 0 ? 0 : Number.isNaN(p) ? 100 : p;
-}
-
-export function QueueView({
-	curInfo,
-	SpotifyClient,
-}: {
-	curInfo?: SongState;
-	SpotifyClient?: Spotify;
-}) {
+function QueueView({ curInfo, SpotifyClient }: { curInfo?: SongState; SpotifyClient?: Spotify }) {
 	if (!curInfo || !curInfo.queue) return <></>;
 
 	const NowPlaying = [
@@ -308,7 +301,7 @@ export function QueueView({
 			className="font-bold">
 			Now playing:
 		</div>,
-		<QueueElement
+		<SongCard
 			albImg={curInfo.image}
 			title={curInfo.title}
 			artist={curInfo.artist}
@@ -333,7 +326,7 @@ export function QueueView({
 							(x) => x.height == 64
 						)[0];
 						return (
-							<QueueElement
+							<SongCard
 								albImg={albImg64.url}
 								title={queueItem.name}
 								artist={queueItem.artists.items
@@ -361,7 +354,7 @@ export function QueueView({
 	];
 }
 
-function QueueElement({
+function SongCard({
 	albImg,
 	title,
 	artist,
@@ -393,5 +386,76 @@ function QueueElement({
 				</span>
 			</div>
 		</ButtonWithFetchState>
+	);
+}
+
+export function View({
+	SpotifyClient,
+	viewType,
+	curInfo,
+	lyrics,
+	lyricText,
+	lyrSource,
+	lyricType,
+	curProgressMs,
+}: {
+	SpotifyClient?: Spotify;
+	viewType: number | undefined;
+	curInfo?: SongState;
+	lyrics: Lyrics[] | undefined;
+	lyricText?: string | React.JSX.Element | React.JSX.Element[] | undefined;
+	lyrSource: string;
+	lyricType: "Line" | "Syllable" | "Static" | undefined;
+	curProgressMs: number;
+}) {
+	const defaultView = (
+		<div className="flex justify-center items-center h-full w-full px-6">
+			<Image
+				className="w-auto rounded-xl"
+				alt="alb-img"
+				width={0}
+				height={0}
+				priority={false}
+				unoptimized={true}
+				src={curInfo?.image || blank}
+			/>
+		</div>
+	);
+	const lyricsView = lyrics ? (
+		<LyricView
+			lyrics={lyrics}
+			lyricSource={lyrSource}
+			contentType={lyricType}
+			curProgressMs={curProgressMs}
+			SpotifyClient={SpotifyClient}
+			nextSong={curInfo?.queue[0]}
+		/>
+	) : (
+		lyricText
+	);
+
+	const queueView = (
+		<QueueView
+			curInfo={curInfo}
+			SpotifyClient={SpotifyClient}
+		/>
+	);
+
+	return (
+		<>
+			{viewType === undefined ? defaultView : <></>}
+			{viewType == 0 ? (
+				lyricsView ? (
+					<div className="extraContainer h-full">
+						<div className="extra p-3">{lyricsView}</div>
+					</div>
+				) : (
+					defaultView
+				)
+			) : (
+				<></>
+			)}
+			{viewType == 1 ? <div className="px-3">{queueView}</div> : <></>}
+		</>
 	);
 }

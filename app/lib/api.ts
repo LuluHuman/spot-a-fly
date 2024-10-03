@@ -50,7 +50,7 @@ export const fetchLyrics = {
         if (uri.includes("local")) return
         const id = URIto.id(uri)
         const url = "https://beautiful-lyrics.socalifornian.live/lyrics/" + id;
-        return Spotify.makeRequest("/api/proxy/" + encodeURIComponent(url)) as any
+        return Spotify.makeRequest(url, { withProxy: true }) as any
     },
     "Musixmatch": (mxm: Musixmatch, title: string, artist: string) => {
         return new Promise((res, rej) => {
@@ -402,7 +402,7 @@ export class Spotify {
 
         const playlistUrl = URIto.url(uri);
         if (!playlistUrl) return
-        const req = this.makeRequest(playlistUrl, { withProxy: true })
+        const req = this.makeRequest(playlistUrl)
         cache["playlist"][uri] = req
         return req
     }
@@ -428,7 +428,7 @@ export class Spotify {
     }
 
     //#region Tracks
-    getTrack(id: string) { return this.makeRequest(api + "/tracks/" + id, { withProxy: true }); }
+    getTrack(id: string) { return this.makeRequest(api + "/tracks/" + id); }
     getTrackMetadata(trackId: string) {
         if (cache["metadata"][trackId]) return cache["metadata"][trackId]
 
@@ -441,7 +441,7 @@ export class Spotify {
         }
         const gid = val.toString(16).padStart(32, "0");
         const url = `https://spclient.wg.spotify.com/metadata/4/track/${gid}`
-        const req = this.makeRequest(url, { withProxy: true });
+        const req = this.makeRequest(url);
         cache["metadata"][trackId] = req
         return req
     }
@@ -488,7 +488,7 @@ export class Spotify {
             }
         });
         const _host = "https://gae2-spclient.spotify.com"
-        return this.makeRequest(_host + `/connect-state/v1/player/command/from/0/to/${active_device_id}`, { withProxy: true, method: "POST", body: raw });
+        return this.makeRequest(_host + `/connect-state/v1/player/command/from/0/to/${active_device_id}`, { method: "POST", body: raw });
     }
 
     async playback(mode: "pause" | "play" | "skipNext" | "skipPrev" | "shuffle" | "repeat", options?: any) {

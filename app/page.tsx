@@ -2,7 +2,7 @@
 
 import "./style.css";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 
 import { AddToPlaylist, Explicit, LyricsIcon, Queue, Saved } from "./components/icons";
 import OverflowText from "./components/OverflowText";
@@ -13,12 +13,17 @@ import { Musixmatch, Spotify, URIto } from "./lib/api";
 import { PlayerState, SpotifyWebhook, SongState, Lyrics, EditablePlaylist } from "./lib/types";
 import { findLyrics } from "./lib/lyricFinder";
 import collectState from "./lib/collectState";
-import { AddToView, LyricView, QueueView } from "./components/Views";
+import { AddToView, View } from "./components/Views";
 
+import { useSearchParams } from "next/navigation";
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 
 export default function Home() {
+	const searchParams = useSearchParams();
+	const v = searchParams.get("viewId");
+	const lastV = useRef(v);
+
 	const [SpotifyClient, setSpotifyClient] = useState<Spotify>();
 
 	const [curInfo, setInfo] = useState<SongState>();
@@ -26,7 +31,7 @@ export default function Home() {
 		useState<EditablePlaylist["data"]["me"]["editablePlaylists"]>();
 
 	const [isPaused, setPaused] = useState<boolean>(true);
-	const [viewType, setViewType] = useState<0 | 1>();
+	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [state, setPlayerState] = useState<SpotifyWebhook["payloads"][0]["cluster"]>();
 
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
@@ -45,6 +50,11 @@ export default function Home() {
 	var currentInveral = useRef<NodeJS.Timeout>();
 	var [curProgressMs, setCurProgressMs] = useState<number>(0);
 	var curDurationMs = useRef<number>(0);
+
+	if (v !== lastV.current) {
+		lastV.current = v;
+		setViewType(v ? parseInt(v) : undefined);
+	}
 
 	useEffect(() => setSpotifyClient(new Spotify()), []);
 	useEffect(() => {
@@ -185,38 +195,13 @@ export default function Home() {
 		return () => clearInterval(currentInveral.current);
 	}, [SpotifyClient, state]);
 
-	const defaultView = (
-		<div className="flex justify-center items-center h-full w-full px-6">
-			<Image
-				className="w-auto rounded-xl"
-				alt="alb-img"
-				width={0}
-				height={0}
-				priority={false}
-				unoptimized={true}
-				src={curInfo?.image || blank}
-			/>
-		</div>
-	);
-	const lyricsView = lyrcs ? (
-		<LyricView
-			lyrcs={lyrcs}
-			lyricSource={lyrSource.current}
-			contentType={lyricType.current}
-			curProgressMs={curProgressMs}
-			SpotifyClient={SpotifyClient}
-			nextSong={curInfo?.queue[0]}
-		/>
-	) : (
-		lyricText
-	);
-
-	const queueView = (
-		<QueueView
-			curInfo={curInfo}
-			SpotifyClient={SpotifyClient}
-		/>
-	);
+	const buttonClick = (viewId: number) => {
+		setViewType((x) => {
+			const setView = x == viewId ? undefined : viewId;
+			history.pushState(null, "", setView === undefined ? "/" : "/?viewId=" + setView);
+			return setView;
+		});
+	};
 	return (
 		<>
 			<Backdrop curInfo={curInfo} />
@@ -245,19 +230,16 @@ export default function Home() {
 				) : (
 					<></>
 				)}
-				{viewType === undefined ? defaultView : <></>}
-				{viewType == 0 ? (
-					lyricsView ? (
-						<div className="extraContainer h-full">
-							<div className="extra p-3">{lyricsView}</div>
-						</div>
-					) : (
-						defaultView
-					)
-				) : (
-					<></>
-				)}
-				{viewType == 1 ? <div className="px-3">{queueView}</div> : <></>}
+				<View
+					SpotifyClient={SpotifyClient}
+					viewType={viewType}
+					curInfo={curInfo}
+					lyrics={lyrcs}
+					lyricText={lyricText}
+					lyrSource={lyrSource.current}
+					lyricType={lyricType.current}
+					curProgressMs={curProgressMs}
+				/>
 			</div>
 			<div className="track px-4">
 				<div className="flex items-center justify-between py-3 w-full">
@@ -302,12 +284,12 @@ export default function Home() {
 					<div>
 						<button
 							className={viewType == 0 ? "fill-[#1ed760]" : "fill-white"}
-							onClick={() => setViewType((x) => (x == 0 ? undefined : 0))}>
+							onClick={() => buttonClick(0)}>
 							<LyricsIcon />
 						</button>
 						<button
 							className={viewType == 1 ? "fill-[#1ed760]" : "fill-white"}
-							onClick={() => setViewType((x) => (x == 1 ? undefined : 1))}>
+							onClick={() => buttonClick(1)}>
 							<Queue />
 						</button>
 					</div>
@@ -378,7 +360,7 @@ function SongInfo({
 	err,
 }: {
 	curInfo?: SongState;
-	viewType?: 0 | 1 | undefined;
+	viewType?: number | undefined;
 	err?: string;
 }) {
 	return (
