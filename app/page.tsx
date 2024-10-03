@@ -203,7 +203,7 @@ export default function Home() {
 		});
 	};
 	return (
-		<>
+		<Suspense>
 			<Backdrop curInfo={curInfo} />
 
 			{addToModal ? (
@@ -295,7 +295,7 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
-		</>
+		</Suspense>
 	);
 }
 
