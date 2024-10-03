@@ -2,7 +2,7 @@
 
 import "./style.css";
 import Image from "next/image";
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState, Suspense } from "react";
 
 import { AddToPlaylist, Explicit, LyricsIcon, Queue, Saved } from "./components/icons";
 import OverflowText from "./components/OverflowText";
