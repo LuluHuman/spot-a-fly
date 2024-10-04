@@ -18,6 +18,7 @@ export async function findLyrics(
 	if (cache.current[uri]) return cache.current[uri];
 	const beuLyr = async () => {
 		if (!SpotifyClient) return;
+		if (!uri.startsWith("spotify:track")) return undefined;
 
 		const lyr = await fetchLyrics.beautifulLyrics(SpotifyClient, uri);
 		if (!lyr || !lyr.Type || lyr.Type == "Static") return;
@@ -52,6 +53,7 @@ export async function findLyrics(
 
 	const spotify = async () => {
 		if (!SpotifyClient) return;
+		if (!uri.startsWith("spotify:track")) return undefined;
 
 		const lyr = (await fetchLyrics.spotify(SpotifyClient, uri)) as Lyrics[];
 

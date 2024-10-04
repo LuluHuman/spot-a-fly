@@ -34,7 +34,6 @@ export function ButtonWithFetchState({
 				const click = clickAction();
 				if (!click?.then) return;
 				click.then((e: any) => {
-					console.log(e, e && e.err);
 					setOpacityClass(false);
 					if (e && setErrToast)
 						setErrToast("Error: " + e?.error?.message || JSON.stringify(e));

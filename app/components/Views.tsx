@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { EditablePlaylist, Lyrics, NextTrack, SongState } from "../lib/types";
+import { EditablePlaylist, Lyrics, NextTrack, SongState, SongStateExtra } from "../lib/types";
 import { Explicit, LeftArrow, Pinned, Saved } from "./icons";
 import { Spotify, URIto } from "../lib/api";
 import { ButtonWithFetchState } from "./components";
@@ -15,19 +15,25 @@ export function AddToView({
 	songUri,
 	SpotifyClient,
 	setToast,
+	modalHistory,
 }: {
 	addToModal: EditablePlaylist["data"]["me"]["editablePlaylists"];
 	setAddToModal: any;
 	songUri?: string;
 	SpotifyClient?: Spotify;
 	setToast: any;
+	modalHistory: any;
 }) {
 	return (
 		<div className="fixed w-dvw h-dvh bg-neutral-900 z-10 px-4">
 			<div className="flex items-center py-4 justify-between">
 				<button
 					className="px-3"
-					onClick={() => setAddToModal(undefined)}>
+					onClick={() => {
+						modalHistory.current.pop();
+						const modal = modalHistory.current[modalHistory.current.length - 1];
+						setAddToModal(modal);
+					}}>
 					<LeftArrow />
 				</button>
 				<span>Add to playlist</span>
@@ -52,7 +58,15 @@ export function AddToView({
 									SpotifyClient.getEditablePlaylists([songUri], folderUri).then(
 										(data) => {
 											const playlists = data as EditablePlaylist;
-											setAddToModal(playlists.data.me.editablePlaylists);
+
+											modalHistory.current.push(
+												playlists.data.me.editablePlaylists
+											);
+											const modal =
+												modalHistory.current[
+													modalHistory.current.length - 1
+												];
+											setAddToModal(modal);
 										}
 									);
 								} else {
@@ -292,8 +306,16 @@ function parseLines(
 	);
 }
 
-function QueueView({ curInfo, SpotifyClient }: { curInfo?: SongState; SpotifyClient?: Spotify }) {
-	if (!curInfo || !curInfo.queue) return <></>;
+function QueueView({
+	curInfo,
+	curInfoExtra,
+	SpotifyClient,
+}: {
+	curInfo?: SongState;
+	curInfoExtra?: SongStateExtra;
+	SpotifyClient?: Spotify;
+}) {
+	if (!curInfo || !curInfoExtra || !curInfoExtra.queue) return <></>;
 
 	const NowPlaying = [
 		<div
@@ -310,8 +332,8 @@ function QueueView({ curInfo, SpotifyClient }: { curInfo?: SongState; SpotifyCli
 		/>,
 	];
 
-	const ProviderContext = curInfo.queue.filter(({ provider }) => provider !== "queue");
-	const ProviderQueue = curInfo.queue.filter(({ provider }) => provider == "queue");
+	const ProviderContext = curInfoExtra.queue.filter(({ provider }) => provider !== "queue");
+	const ProviderQueue = curInfoExtra.queue.filter(({ provider }) => provider == "queue");
 	const section = (q: NextTrack[], label: string) =>
 		q.length == 0
 			? []
@@ -335,12 +357,16 @@ function QueueView({ curInfo, SpotifyClient }: { curInfo?: SongState; SpotifyCli
 								isExplicit={queueItem.contentRating.label == "EXPLICIT"}
 								key={label + "-" + i}
 								clickAction={() => {
-									if (!queueItem.uri.startsWith("spotify:track")) return;
-									return SpotifyClient?.SkipTo({
-										active_device_id: curInfo.deviceId,
-										uri: queueItem.uri,
-										uid: queueItem.uid,
-									});
+									if (
+										queueItem.uri.startsWith("spotify:track") ||
+										queueItem.uri.startsWith("spotify:local")
+									) {
+										return SpotifyClient?.SkipTo({
+											active_device_id: curInfo.deviceId,
+											uri: queueItem.uri,
+											uid: queueItem.uid,
+										});
+									}
 								}}
 							/>
 						);
@@ -350,7 +376,7 @@ function QueueView({ curInfo, SpotifyClient }: { curInfo?: SongState; SpotifyCli
 	return [
 		...NowPlaying,
 		...section(ProviderQueue, "Next in queue"),
-		...section(ProviderContext, "Next from: " + curInfo.context.name),
+		...section(ProviderContext, "Next from: " + curInfoExtra.context.name),
 	];
 }
 
@@ -393,6 +419,7 @@ export function View({
 	SpotifyClient,
 	viewType,
 	curInfo,
+	curInfoExtra,
 	lyrics,
 	lyricText,
 	lyrSource,
@@ -402,6 +429,7 @@ export function View({
 	SpotifyClient?: Spotify;
 	viewType: number | undefined;
 	curInfo?: SongState;
+	curInfoExtra?: SongStateExtra;
 	lyrics: Lyrics[] | undefined;
 	lyricText?: string | React.JSX.Element | React.JSX.Element[] | undefined;
 	lyrSource: string;
@@ -428,7 +456,7 @@ export function View({
 			contentType={lyricType}
 			curProgressMs={curProgressMs}
 			SpotifyClient={SpotifyClient}
-			nextSong={curInfo?.queue[0]}
+			nextSong={curInfoExtra?.queue[0]}
 		/>
 	) : (
 		lyricText
@@ -437,6 +465,7 @@ export function View({
 	const queueView = (
 		<QueueView
 			curInfo={curInfo}
+			curInfoExtra={curInfoExtra}
 			SpotifyClient={SpotifyClient}
 		/>
 	);

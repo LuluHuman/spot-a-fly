@@ -211,21 +211,24 @@ export interface NextTracks {
 };
 
 
-export interface SongState {
+export interface SongStateExtra {
     canvasUrl: string | undefined
-    isExplicit: boolean;
     isSaved: boolean;
-    deviceId?: string
-    deviceText?: string;
     context: {
         header: string,
         name: string
     };
+    queue: NextTrack[];
+}
+
+export interface SongState {
+    isExplicit: boolean;
+    deviceId?: string
+    deviceText?: string;
     title: string;
     artist: string;
     image: string;
     duration: number;
-    queue: NextTrack[];
     options: {
         repeating_context: boolean,
         repeating_track: boolean,

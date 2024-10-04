@@ -2,54 +2,84 @@
 
 import "./style.css";
 import Image from "next/image";
-import React, { use, useEffect, useRef, useState, Suspense } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 
 import { AddToPlaylist, Explicit, LyricsIcon, Queue, Saved } from "./components/icons";
 import OverflowText from "./components/OverflowText";
 import { Timestamp } from "./components/components";
-import { DeviceCurrenlyPlaying, Buttons } from "./components/controlComponents";
+import { DeviceCurrenlyPlaying, Buttons } from "./components/Buttons";
 
 import { Musixmatch, Spotify, URIto } from "./lib/api";
-import { PlayerState, SpotifyWebhook, SongState, Lyrics, EditablePlaylist } from "./lib/types";
+import {
+	PlayerState,
+	SpotifyWebhook,
+	SongStateExtra,
+	Lyrics,
+	EditablePlaylist,
+	SongState,
+} from "./lib/types";
 import { findLyrics } from "./lib/lyricFinder";
-import collectState from "./lib/collectState";
+import { collectState, collectStateExtra } from "./lib/collectState";
 import { AddToView, View } from "./components/Views";
 
 import { useSearchParams } from "next/navigation";
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
+const blankState = {
+	canvasUrl: undefined,
+	isExplicit: false,
+	isSaved: false,
+	context: { header: "", name: "" },
+	title: "...",
+	artist: "",
+	image: "",
+	duration: 0,
+	queue: [],
+	options: { repeating_context: false, repeating_track: false, shuffling_context: false },
+	uris: { album: "", song: "" },
+};
 
 export default function Home() {
 	const searchParams = useSearchParams();
 	const v = searchParams.get("viewId");
 	const lastV = useRef(v);
 
-	const [SpotifyClient, setSpotifyClient] = useState<Spotify>();
+	///
 
-	const [curInfo, setInfo] = useState<SongState>();
+	//! Save User's Data
+	const cache = useRef<{ [key: string]: any }>({});
+	const lastTrackUri = useRef("");
+
+	//! 3rd Party APIs
+	const [SpotifyClient, setSpotifyClient] = useState<Spotify>();
+	const mxmClient = useRef<Musixmatch>();
+
+	//! Song info states lidat
+	const [state, setPlayerState] = useState<SpotifyWebhook["payloads"][0]["cluster"]>();
+	const [curInfoExtra, setInfoExtra] = useState<SongStateExtra>(blankState);
+	const [curInfo, setInfo] = useState<SongState>(blankState);
+	const [isPaused, setPaused] = useState<boolean>(true);
+	const currentInveral = useRef<NodeJS.Timeout>();
+
+	//! Modal History, Info
+	const modalHistory = useRef([]);
 	const [addToModal, setAddToModal] =
 		useState<EditablePlaylist["data"]["me"]["editablePlaylists"]>();
 
-	const [isPaused, setPaused] = useState<boolean>(true);
+	//! View related things
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
-	const [state, setPlayerState] = useState<SpotifyWebhook["payloads"][0]["cluster"]>();
-
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
 	const [lyrcs, setLyrics] = useState<Lyrics[]>();
+	const lyricType = useRef<"Line" | "Syllable" | "Static">();
+	const lyrSource = useRef("");
 
-	const [err, setErr] = useState<string | undefined>();
+	//! Inform the user
+	const [err, setMessage] = useState<string | undefined>();
 	const [toast, setToast] = useState<string | undefined>();
 
-	var cache = useRef<{ [key: string]: any }>({});
-
-	var mxmClient = useRef<Musixmatch>();
-	var lyrSource = useRef("");
-	var lastTrackUri = useRef("");
-
-	var lyricType = useRef<"Line" | "Syllable" | "Static">();
-	var currentInveral = useRef<NodeJS.Timeout>();
-	var [curProgressMs, setCurProgressMs] = useState<number>(0);
-	var curDurationMs = useRef<number>(0);
+	//! Timekeeper
+	const [curProgressMs, setCurProgressMs] = useState<number>(0);
+	const curDurationMs = useRef<number>(0);
 
 	if (v !== lastV.current) {
 		lastV.current = v;
@@ -62,8 +92,10 @@ export default function Home() {
 
 		mxmClient.current = new Musixmatch();
 
+		setMessage("Connecting to Webhook...");
 		SpotifyClient.ready = () => {
-			if (!SpotifyClient.session.accessToken) return setErr("Error: No Spotify Acces Token");
+			if (!SpotifyClient.session.accessToken)
+				return setMessage("Error: No Spotify Access Token");
 			if (SpotifyClient.session.isAnonymous) {
 				const token = prompt("sp_dc Access Token:");
 				fetch("/api/session", {
@@ -72,6 +104,7 @@ export default function Home() {
 				}).then(() => (window.location.href = window.location.href));
 				return;
 			}
+			setMessage(undefined);
 			const wsDealer = "dealer.spotify.com";
 			const wsUrl = `wss://${wsDealer}/?access_token=${SpotifyClient.session.accessToken}`;
 			const spWs = new WebSocket(wsUrl);
@@ -115,24 +148,24 @@ export default function Home() {
 		const trackUri = player_state.track.uri;
 		const trackId = URIto.id(trackUri);
 
+		const songDuration = parseInt(player_state.duration);
+		curDurationMs.current = songDuration;
+
 		const timestamp = parseInt(player_state.timestamp);
 		const ms = parseInt(player_state.position_as_of_timestamp);
 		const startTimestamp = timestamp - ms;
 
 		setCurProgressMs(ms);
-		const songDuration = parseInt(player_state.duration);
-		curDurationMs.current = songDuration;
-		const _msStep = 100;
+
+		const _msStep = 50;
 		const inveral = setInterval(() => {
 			if (player_state.is_paused) return clearInterval(inveral);
 			if (currentInveral.current !== inveral) {
 				clearInterval(currentInveral.current);
 				currentInveral.current = inveral as NodeJS.Timeout;
 			}
-			const ms = new Date().getTime() - startTimestamp;
-			const songDuration = parseInt(player_state.duration);
+			const ms = performance.timeOrigin + performance.now() - startTimestamp;
 			setCurProgressMs(ms);
-			curDurationMs.current = songDuration;
 		}, _msStep);
 
 		if (lastTrackUri.current == trackUri) {
@@ -140,6 +173,11 @@ export default function Home() {
 				console.log("Changed info: ", changedState);
 				setInfo(changedState);
 			});
+			collectStateExtra(SpotifyClient, state).then((changedState) => {
+				console.log("Changed info(Promises): ", changedState);
+				setInfoExtra(changedState);
+			});
+
 			return;
 		}
 		lastTrackUri.current = trackUri;
@@ -159,11 +197,10 @@ export default function Home() {
 				document.body.style.setProperty("--light-color", Colors.colorLight.hex);
 			}
 		);
-
 		collectState(trackId, SpotifyClient, state).then((changedState: SongState) => {
-			console.log("Info: ", changedState);
-			document.title = `${changedState?.title} • ${changedState.artist}`;
+			console.log("Info(No promises): ", changedState);
 			setInfo(changedState);
+			document.title = `${changedState?.title} • ${changedState.artist}`;
 			findLyrics(
 				{ cache, SpotifyClient, mxmClient: mxmClient?.current },
 				{
@@ -179,8 +216,11 @@ export default function Home() {
 				lyrSource.current = source + cpyAttribute;
 				setLyrics(data);
 			});
+		});
+		collectStateExtra(SpotifyClient, state).then((changedState: SongStateExtra) => {
+			console.log("Info(Promises): ", changedState);
+			setInfoExtra(changedState);
 
-			//Cache next Song
 			if (!changedState?.queue[0]) return;
 			const { uri, name, artists } = changedState?.queue[0];
 			findLyrics(
@@ -203,8 +243,11 @@ export default function Home() {
 		});
 	};
 	return (
-		<Suspense>
-			<Backdrop curInfo={curInfo} />
+		<>
+			<Backdrop
+				curInfo={curInfo}
+				curInfoExtra={curInfoExtra}
+			/>
 
 			{addToModal ? (
 				<AddToView
@@ -213,12 +256,13 @@ export default function Home() {
 					songUri={curInfo?.uris.song}
 					SpotifyClient={SpotifyClient}
 					setToast={setToast}
+					modalHistory={modalHistory}
 				/>
 			) : (
 				<></>
 			)}
 
-			<Context curInfo={curInfo} />
+			<Context curInfo={curInfoExtra} />
 			<div
 				id="side"
 				className="overflow-scroll">
@@ -234,6 +278,7 @@ export default function Home() {
 					SpotifyClient={SpotifyClient}
 					viewType={viewType}
 					curInfo={curInfo}
+					curInfoExtra={curInfoExtra}
 					lyrics={lyrcs}
 					lyricText={lyricText}
 					lyrSource={lyrSource.current}
@@ -251,26 +296,16 @@ export default function Home() {
 					<AddToButton
 						SpotifyClient={SpotifyClient}
 						curInfo={curInfo}
+						curInfoExtra={curInfoExtra}
 						setAddToModal={setAddToModal}
+						modalHistory={modalHistory}
 					/>
 				</div>
-				<div>
-					<div
-						id="track"
-						className="relative top-[-10px]">
-						<div
-							style={
-								{
-									"--width": `${(curProgressMs / curDurationMs.current) * 100}%`,
-								} as React.CSSProperties
-							}
-						/>
-					</div>
-					<div className="flex w-full justify-between *:text-xs">
-						<Timestamp ms={curProgressMs} />
-						<Timestamp ms={curDurationMs.current} />
-					</div>
-				</div>
+				<Track
+					SpotifyClient={SpotifyClient}
+					curProgressMs={curProgressMs}
+					curDurationMs={curDurationMs.current}
+				/>
 				<div className="flex justify-center items-center *:mx-1">
 					<Buttons
 						SpotifyClient={SpotifyClient}
@@ -295,7 +330,7 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
-		</Suspense>
+		</>
 	);
 }
 
@@ -311,11 +346,70 @@ function Toast({ toast, setToast }: { toast: string; setToast: any }) {
 	);
 }
 
-function Backdrop({ curInfo }: { curInfo?: SongState }) {
-	return curInfo?.canvasUrl ? (
+function Track({
+	SpotifyClient,
+	curProgressMs,
+	curDurationMs,
+}: {
+	SpotifyClient?: Spotify;
+	curProgressMs: number;
+	curDurationMs: number;
+}) {
+	const setElapsedTo = useRef<number>();
+	return (
+		<div
+			onTouchEnd={(event) => {
+				setElapsedTo.current = undefined;
+				const element = event.target as HTMLDivElement;
+				const roundGrad = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
+				const val = roundGrad(
+					(event.changedTouches[0].clientX - element.offsetLeft) / element.offsetWidth
+				);
+
+				SpotifyClient?.SeekTo(Math.floor(val * curDurationMs));
+			}}
+			onTouchMove={(event) => {
+				const element = event.target as HTMLDivElement;
+				const roundGrad = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
+				const val = roundGrad(
+					(event.touches[0].clientX - element.offsetLeft) / element.offsetWidth
+				);
+
+				setElapsedTo.current = val * 100;
+			}}>
+			<div
+				id="track"
+				className="flex">
+				<div
+					style={
+						{
+							"--width": `${
+								setElapsedTo.current || (curProgressMs / curDurationMs) * 100
+							}%`,
+						} as React.CSSProperties
+					}
+				/>
+				<span className="size-2 bg-white inline-block rounded-full relative -top-[1.7px] -left-1"></span>
+			</div>
+			<div className="flex w-full justify-between *:text-xs">
+				<Timestamp ms={curProgressMs} />
+				<Timestamp ms={curDurationMs} />
+			</div>
+		</div>
+	);
+}
+
+function Backdrop({
+	curInfo,
+	curInfoExtra,
+}: {
+	curInfo?: SongState;
+	curInfoExtra: SongStateExtra;
+}) {
+	return curInfoExtra?.canvasUrl ? (
 		<div className="absolute z-[-1] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
 			<video
-				src={curInfo?.canvasUrl}
+				src={curInfoExtra?.canvasUrl}
 				loop
 				autoPlay
 				className="blur-md h-full saturate-200 brightness-50 max-w-none"
@@ -343,7 +437,7 @@ function Backdrop({ curInfo }: { curInfo?: SongState }) {
 	);
 }
 
-function Context({ curInfo }: { curInfo?: SongState }) {
+function Context({ curInfo }: { curInfo?: SongStateExtra }) {
 	return (
 		<div className="playback flex items-center py-3">
 			<div className="text-xs text-center w-full">
@@ -395,11 +489,15 @@ function SongInfo({
 function AddToButton({
 	SpotifyClient,
 	curInfo,
+	curInfoExtra,
 	setAddToModal,
+	modalHistory,
 }: {
 	SpotifyClient?: Spotify;
 	curInfo?: SongState;
+	curInfoExtra?: SongStateExtra;
 	setAddToModal: any;
+	modalHistory: any;
 }) {
 	return (
 		<button
@@ -409,10 +507,11 @@ function AddToButton({
 				if (!songUri || !SpotifyClient) return;
 				SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
 					const playlists = data as EditablePlaylist;
+					modalHistory.current.push(playlists.data.me.editablePlaylists);
 					setAddToModal(playlists.data.me.editablePlaylists);
 				});
 			}}>
-			{curInfo?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
+			{curInfoExtra?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
 		</button>
 	);
 }

@@ -186,7 +186,7 @@ export class Musixmatch {
     }
     async makeRequest(url: string, query?: string, method?: "GET" | "POST" | "PUT" | "DELETE") {
         if (this.user_token === "") return
-        const _url = "/api/proxy/" + encodeURIComponent(`${url}?usertoken=${this.user_token}&app_id=web-desktop-app-v1.0&${query}`)
+        const _url = "/api/proxy/" + encodeURIComponent(url) + `?usertoken=${this.user_token}&app_id=web-desktop-app-v1.0&${query}`
         return new Promise((resp, rej) => {
             const defaultOptions = {
                 method: method || "GET",
@@ -222,7 +222,7 @@ export class Musixmatch {
     }
     searchSong(title: string, artist: string) {
         const _search = "https://apic-desktop.musixmatch.com/ws/1.1/track.search"
-        return this.makeRequest(_search, `q_track=${title}&q_artist=${artist}`)
+        return this.makeRequest(_search, `q_track=${encodeURIComponent(title)}&q_artist=${encodeURIComponent(artist)}`)
     }
     getSubtitle(trackId: number) {
         const _search = "https://apic-desktop.musixmatch.com/ws/1.1/track.subtitle.get"

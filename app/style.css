@@ -17,7 +17,7 @@ body {
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	--light-color: #000;
+	--light-color: #5c5c5c;
 	--dark-color: #121212;
 	--text-shadow-blur-radius: 4px;
 	--text-shadow-opacity: 0%;
@@ -125,7 +125,6 @@ body > #side {
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;
-	transition: 0.1s;
 }
 
 div.extra > button.lineActive > span.sylInactive {
@@ -138,6 +137,7 @@ div.extra > button.lineActive > span.bg {
 .extra > button.lineActive > span.sylActive {
 	font-size: 30px;
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 	animation-name: bounce;
 	animation-duration: 1s;
@@ -348,7 +348,7 @@ img.BackCenter {
 .Front,
 .Back,
 .BackCenter {
-	animation: a 100s linear infinite;
+	animation: a 20s linear infinite;
 	border-radius: 100em;
 	filter: blur(40px);
 	position: absolute;
@@ -373,7 +373,6 @@ button:active {
 	width: 100%;
 	height: 4px;
 	background: rgba(255, 255, 255, 0.3);
-	overflow: hidden;
 	border-radius: 25px;
 }
 
