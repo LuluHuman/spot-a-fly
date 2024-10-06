@@ -2,11 +2,21 @@
 
 import "./style.css";
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 
-import { Explicit, LyricsIcon, Queue } from "./components/icons";
+import {
+	DeviceIcon,
+	Devices,
+	DownArrow,
+	Explicit,
+	LyricsIcon,
+	MoreOptions,
+	PauseIcon,
+	PlayIcon,
+	Queue,
+} from "./components/icons";
 import OverflowText from "./components/OverflowText";
-import { Timestamp } from "./components/components";
+import { ButtonWithFetchState, Timestamp } from "./components/components";
 import { DeviceCurrenlyPlaying, Buttons, AddToButton } from "./components/Buttons";
 import View from "./components/Views/Views";
 import AddToView from "./components/Views/AddTo";
@@ -47,7 +57,10 @@ export default function Home() {
 
 	///
 
-	//! Save User's Data
+	const [user, setUser] = useState<any>();
+	const [libraryItems, setLibraryItems] = useState<any>();
+
+	//! Caching
 	const cache = useRef<{ [key: string]: any }>({});
 	const lastTrackUri = useRef("");
 
@@ -67,6 +80,7 @@ export default function Home() {
 
 	//! View related things
 	const [ShowDevices, setDevicesOverlay] = useState<boolean>(false);
+	const [hidePlayer, setPlayerHidden] = useState<boolean>(false);
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
 	const [lyrcs, setLyrics] = useState<Lyrics[]>();
@@ -80,7 +94,6 @@ export default function Home() {
 	//! Timekeeper
 	const [curProgressMs, setCurProgressMs] = useState<number>(0);
 	const curDurationMs = useRef<number>(0);
-	const curTimestampMs = useRef<number>();
 	const [isPaused, setPaused] = useState<boolean>(true);
 	const currentInveral = useRef<NodeJS.Timeout>();
 
@@ -107,6 +120,13 @@ export default function Home() {
 				}).then(() => (window.location.href = window.location.href));
 				return;
 			}
+			SpotifyClient.getMe().then((me) => {
+				setUser(me);
+			});
+			SpotifyClient.getLibrary().then((data) => {
+				const libraryV3items = (data as any).data.me.libraryV3.items;
+				setLibraryItems(libraryV3items);
+			});
 			setMessage(undefined);
 			const wsDealer = "dealer.spotify.com";
 			const wsUrl = `wss://${wsDealer}/?access_token=${SpotifyClient.session.accessToken}`;
@@ -250,12 +270,7 @@ export default function Home() {
 		});
 	};
 	return (
-		<div className={`overflow-hidden flex flex-col w-dvw h-dvh `}>
-			<Backdrop
-				curInfo={curInfo}
-				curInfoExtra={curInfoExtra}
-			/>
-
+		<>
 			{addToModal ? (
 				<AddToView
 					addToModal={addToModal}
@@ -276,77 +291,207 @@ export default function Home() {
 				curInfo={curInfo}
 				setDevicesOverlay={setDevicesOverlay}
 			/>
+			{hidePlayer ? (
+				<div className="flex flex-col items-center w-dvw h-dvh overflow-scroll">
+					<h1 className="py-2 text-xl font-bold">
+						Logged in as {user?.display_name || "Spooky Ghost"}
+					</h1>
+					<div className="flex flex-wrap justify-center">
+						{libraryItems?.map((i: any) => {
+							const item = i.item.data;
+							const type = item.__typename;
+							const image = (() => {
+								switch (type) {
+									case "Album":
+										return item.coverArt?.sources[0].url || item.Images;
 
-			<Context curInfo={curInfoExtra} />
-			<div className="overflow-scroll w-full flex flex-col items-stretch flex-1">
-				{toast ? (
-					<Toast
-						toast={toast}
-						setToast={setToast}
-					/>
-				) : (
-					<></>
-				)}
-				<View
-					SpotifyClient={SpotifyClient}
-					viewType={viewType}
-					curInfo={curInfo}
-					curInfoExtra={curInfoExtra}
-					lyrics={lyrcs}
-					lyricText={lyricText}
-					lyrSource={lyrSource.current}
-					lyricType={lyricType.current}
-					curProgressMs={curProgressMs}
-				/>
-			</div>
-			<div className="box-shadow flex flex-col w-full h-fit overflow-hidden z-[1] rounded-t-lg px-4">
-				<div className="flex items-center justify-between py-3 w-full">
-					<SongInfo
-						curInfo={curInfo}
-						viewType={viewType}
-						err={err}
-					/>
-					<AddToButton
-						SpotifyClient={SpotifyClient}
-						curInfo={curInfo}
-						curInfoExtra={curInfoExtra}
-						setAddToModal={setAddToModal}
-						modalHistory={modalHistory}
-					/>
-				</div>
-				<Track
-					SpotifyClient={SpotifyClient}
-					curProgressMs={curProgressMs}
-					curDurationMs={curDurationMs.current}
-				/>
-				<div className="flex justify-center items-center *:mx-1">
-					<Buttons
-						SpotifyClient={SpotifyClient}
-						isPaused={isPaused}
-						curInfo={curInfo}
-						setErrToast={setToast}
-					/>
-				</div>
-				<div className="my-3 flex items-center justify-between">
-					<DeviceCurrenlyPlaying
-						curInfo={curInfo}
-						setDevicesOverlay={setDevicesOverlay}
-					/>
-					<div>
-						<button
-							className={viewType == 0 ? "fill-primarySpotify" : "fill-white"}
-							onClick={() => buttonClick(0)}>
-							<LyricsIcon />
-						</button>
-						<button
-							className={viewType == 1 ? "fill-primarySpotify" : "fill-white"}
-							onClick={() => buttonClick(1)}>
-							<Queue />
-						</button>
+									case "PseudoPlaylist":
+										return item.image?.sources[1].url;
+									case "Playlist":
+										return item.images?.items[0].sources[0].url;
+									case "Artist":
+										return item.visuals?.avatarImage.sources[0].url;
+									case "Folder":
+										return blank;
+									default:
+										break;
+								}
+							})();
+							return (
+								<a
+									key={item.uri}
+									href={item.uri}>
+									<Image
+										className="size-20 m-2 rounded-md aspect-square bg-[#282828] border-none block"
+										alt="coverArt"
+										width={0}
+										height={0}
+										priority={false}
+										unoptimized={true}
+										src={image || blank}
+									/>
+									<span className="w-20 inline-block overflow-hidden text-nowrap text-xs">
+										{item.name || item.profile.name}
+									</span>
+								</a>
+							);
+						})}
+					</div>
+					<div className="fixed bottom-0 w-full p-2">
+						<div className="flex flex-col bg-[var(--dark-color)] rounded-md text-left w-full h-13 overflow-hidden cursor-pointer">
+							<div className="flex items-center p-2 pb-1 w-full">
+								<Image
+									className="size-10 mr-2 rounded-md aspect-square bg-[#282828] border-none block"
+									alt="alb-img"
+									width={64}
+									height={64}
+									priority={false}
+									unoptimized={true}
+									src={curInfo?.image || blank}
+								/>
+								<div
+									className="flex flex-col overflow-hidden"
+									style={{ width: "inherit" }}
+									onClick={() => setPlayerHidden(false)}>
+									<OverflowText className="text-xs w-full font-bold text-nowrap">
+										{curInfo.title + " • " + curInfo.artist}
+									</OverflowText>
+									<span className="text-sm text-primarySpotify *:fill-primarySpotify flex items-center">
+										<Devices />
+										{curInfo?.deviceText}
+									</span>
+								</div>
+								<button
+									className="mx-3 flex items-center *:fill-primarySpotify"
+									onClick={() => setDevicesOverlay(true)}>
+									<DeviceIcon
+										className="h-full size-6"
+										deviceType={
+											curInfo?.deviceId && curInfo?.devices
+												? curInfo?.devices[curInfo.deviceId].device_type
+												: ""
+										}
+									/>
+								</button>
+
+								<AddToButton
+									className="fill-white mx-3"
+									SpotifyClient={SpotifyClient}
+									curInfo={curInfo}
+									curInfoExtra={curInfoExtra}
+									setAddToModal={setAddToModal}
+									modalHistory={modalHistory}
+								/>
+
+								<ButtonWithFetchState
+									disabled={!curInfo.deviceId}
+									setErrToast={setMessage}
+									className="size-10 mx-3 *:fill-white h-full"
+									clickAction={() =>
+										SpotifyClient?.playback(!isPaused ? "pause" : "play")
+									}>
+									{isPaused ? <PauseIcon /> : <PlayIcon />}
+								</ButtonWithFetchState>
+							</div>
+
+							<div className="flex w-full h-1 bg-lightly">
+								<div
+									className="bg-[white] w-[var(--width)] h-full"
+									style={
+										{
+											"--width": `${
+												(curProgressMs / curDurationMs.current) * 100
+											}%`,
+										} as React.CSSProperties
+									}
+								/>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
+			) : (
+				<div className={`overflow-hidden flex flex-col w-dvw h-dvh `}>
+					<Backdrop
+						curInfo={curInfo}
+						curInfoExtra={curInfoExtra}
+					/>
+
+					<Context
+						curInfo={curInfoExtra}
+						setPlayerHidden={setPlayerHidden}
+					/>
+					<div className="overflow-scroll w-full flex flex-col items-stretch flex-1">
+						<View
+							SpotifyClient={SpotifyClient}
+							viewType={viewType}
+							curInfo={curInfo}
+							curInfoExtra={curInfoExtra}
+							lyrics={lyrcs}
+							lyricText={lyricText}
+							lyrSource={lyrSource.current}
+							lyricType={lyricType.current}
+							curProgressMs={curProgressMs}
+						/>
+					</div>
+					<div className="box-shadow flex flex-col w-full h-fit overflow-hidden z-[1] rounded-t-lg px-4">
+						<div className="flex items-center justify-between py-3 w-full">
+							<SongInfo
+								curInfo={curInfo}
+								viewType={viewType}
+								err={err}
+							/>
+							<AddToButton
+								SpotifyClient={SpotifyClient}
+								curInfo={curInfo}
+								curInfoExtra={curInfoExtra}
+								setAddToModal={setAddToModal}
+								modalHistory={modalHistory}
+							/>
+						</div>
+						<Track
+							SpotifyClient={SpotifyClient}
+							curProgressMs={curProgressMs}
+							curDurationMs={curDurationMs.current}
+						/>
+						<div className="flex justify-center items-center *:mx-1">
+							<Buttons
+								SpotifyClient={SpotifyClient}
+								isPaused={isPaused}
+								curInfo={curInfo}
+								setErrToast={setToast}
+							/>
+						</div>
+						<div className="my-3 flex items-center justify-between">
+							<DeviceCurrenlyPlaying
+								curInfo={curInfo}
+								setDevicesOverlay={setDevicesOverlay}
+							/>
+							<div>
+								<button
+									className={viewType == 0 ? "fill-primarySpotify" : "fill-white"}
+									onClick={() => buttonClick(0)}>
+									<LyricsIcon />
+								</button>
+								<button
+									className={viewType == 1 ? "fill-primarySpotify" : "fill-white"}
+									onClick={() => buttonClick(1)}>
+									<Queue />
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			)}
+
+			{toast ? (
+				<Toast
+					toast={toast}
+					setToast={setToast}
+				/>
+			) : (
+				<></>
+			)}
+		</>
 	);
 }
 
@@ -433,7 +578,11 @@ function Backdrop({
 			/>
 		</div>
 	) : (
-		<div className="-z-[1] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none">
+		<div
+			className="-z-[1] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none"
+			style={{
+				background: "linear-gradient(var(--light-color), var(--dark-color), black)",
+			}}>
 			{curInfo && curInfo.image ? (
 				["Front", "Back", "BackCenter"].map((classes) => (
 					<Image
@@ -456,13 +605,19 @@ function Backdrop({
 	);
 }
 
-function Context({ curInfo }: { curInfo?: SongStateExtra }) {
+function Context({ curInfo, setPlayerHidden }: { curInfo?: SongStateExtra; setPlayerHidden: any }) {
 	return (
-		<div className=" z-[1] playback flex items-center py-3">
+		<div className=" z-[1] playback flex justify-between items-center py-3">
+			<button onClick={() => setPlayerHidden(true)}>
+				<DownArrow />
+			</button>
 			<div className="text-xs text-center w-full">
 				<p>{curInfo?.context?.header}</p>
 				<p>{curInfo?.context?.name || "-"}</p>
 			</div>
+			<button onClick={() => (window.location.href = window.location.href)}>
+				<MoreOptions />
+			</button>
 		</div>
 	);
 }

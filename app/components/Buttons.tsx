@@ -113,16 +113,18 @@ export function AddToButton({
 	curInfoExtra,
 	setAddToModal,
 	modalHistory,
+	className,
 }: {
 	SpotifyClient?: Spotify;
 	curInfo?: SongState;
 	curInfoExtra?: SongStateExtra;
 	setAddToModal: any;
 	modalHistory: any;
+	className?: string;
 }) {
 	return (
 		<button
-			className="fill-white pl-4"
+			className={className ? className : "fill-white pl-4"}
 			onClick={() => {
 				const songUri = curInfo?.uris.song;
 				if (!songUri || !SpotifyClient) return;

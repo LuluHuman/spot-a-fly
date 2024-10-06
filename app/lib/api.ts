@@ -295,14 +295,15 @@ export class Spotify {
                 });
         });
     }
-    operation(operationName: "editablePlaylists" | "isCurated" | "decorateContextTracks" | "fetchExtractedColors" | "canvas", variables: any) {
+    operation(operationName: "editablePlaylists" | "isCurated" | "decorateContextTracks" | "fetchExtractedColors" | "canvas" | "libraryV3", variables: any) {
         const encode = (str: any) => encodeURIComponent(JSON.stringify(str))
         const hashes = {
             "editablePlaylists": "acb5390f2929bdcad4c6afe1c08bdbe09375f50fdb29d75244f67e9aee77ebc4",
             "isCurated": "e4ed1f91a2cc5415befedb85acf8671dc1a4bf3ca1a5b945a6386101a22e28a6",
             "decorateContextTracks": "8b8d939c5d6da65a3f1b9fbaa96106b27fd6ff1ae7205846d9de3ffbee3298ee",
             "fetchExtractedColors": "86bdf61bb598ee07dc85d6c3456d9c88eb94f33178509ddc9b33fc9710aa9e9c",
-            "canvas": "1b1e1915481c99f4349af88268c6b49a2b601cf0db7bca8749b5dd75088486fc"
+            "canvas": "1b1e1915481c99f4349af88268c6b49a2b601cf0db7bca8749b5dd75088486fc",
+            "libraryV3": "e25e473b160efdd4ababa7d98aa909ce0e5ab9c49c81f6d040da077a09e34ab3"
         }
 
         const varables = encode(variables)
@@ -385,9 +386,9 @@ export class Spotify {
     }
 
 
-    //me
+    //#region Me
+    getMe() { return this.makeRequest(api + "/me") }
     getPlayer() { return this.makeRequest(api + "/me/player") }
-
     setDevice(deviceId: string) {
         return this.makeRequest(api + "/me/player", {
             method: "PUT", body: JSON.stringify({ "device_ids": [deviceId] })
@@ -397,6 +398,20 @@ export class Spotify {
     getQueue() { return this.makeRequest(api + "/me/player/queue") }
     async SeekTo(position_ms: number) {
         return this.makeRequest(api + "/me/player/seek?position_ms=" + position_ms.toString(), { method: "PUT" });
+    }
+    getLibrary() {
+        return this.operation("libraryV3", {
+            "filters": [],
+            "order": null,
+            "textFilter": "",
+            "features": ["LIKED_SONGS", "YOUR_EPISODES"],
+            "limit": 50,
+            "offset": 0,
+            "flatten": false,
+            "expandedFolders": [],
+            "folderUri": null,
+            "includeFoldersWhenFlattening": true
+        })
     }
 
     //#region Playlists

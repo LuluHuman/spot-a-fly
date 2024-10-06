@@ -96,7 +96,7 @@ function parseLines(
 			const inSylRange = curMs >= msStart;
 
 			const ad = !inSylRange ? "sylInactive" : "sylActive";
-			const bgClass = isBackground ? "text-sm " : "";
+			const bgClass = isBackground ? "text-sm bg " : "";
 			const startOffset = curMs - msStart;
 			const endOffset = msEnd - msStart;
 			const p = (startOffset / endOffset) * 100;

@@ -19,7 +19,6 @@
 }
 body {
 	font-family: SpotifyMixUI-Regular;
-	background: linear-gradient(var(--light-color), var(--dark-color), black);
 }
 
 a:hover {
