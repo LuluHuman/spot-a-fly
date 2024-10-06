@@ -161,7 +161,7 @@ export function DeviceIcon({
 			return (
 				<svg
 					viewBox="0 0 24 24"
-					className={"fill-white size-5 " + className}>
+					className={className}>
 					<path d="M0 21a1 1 0 0 1 1-1h22a1 1 0 1 1 0 2H1a1 1 0 0 1-1-1zM3 5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V5zm3-1a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H6z"></path>
 				</svg>
 			);
@@ -170,7 +170,7 @@ export function DeviceIcon({
 			return (
 				<svg
 					viewBox="0 0 24 24"
-					className={"fill-white size-5 " + className}>
+					className={"size-5 " + className}>
 					<path d="M5 5a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V5zm3-1a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H8z"></path>
 					<path d="M13.25 16.75a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0z"></path>
 				</svg>
@@ -179,7 +179,7 @@ export function DeviceIcon({
 			return (
 				<svg
 					viewBox="0 0 24 24"
-					className={"fill-white size-5 " + className}>
+					className={"size-5 " + className}>
 					<path d="M6.916 1.584A2 2 0 0 1 8.873 0h6.4a2 2 0 0 1 1.957 1.584l.761 3.584A3.001 3.001 0 0 1 20 8v8a3 3 0 0 1-2.009 2.832l-.761 3.584A2 2 0 0 1 15.273 24h-6.4a2 2 0 0 1-1.957-1.584l-.75-3.534A3.001 3.001 0 0 1 4 16V8c0-1.367.915-2.52 2.165-2.882l.751-3.534zM8.235 5h7.676l-.637-3H8.873l-.638 3zm0 14 .638 3h6.4l.638-3H8.235zM7 7a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H7z"></path>
 				</svg>
 			);

@@ -2,7 +2,7 @@ import { Spotify } from "@/app/lib/api";
 import { SongState } from "@/app/lib/types";
 import { Close, DeviceIcon } from "../icons";
 import { ButtonWithFetchState } from "../components";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function DeviceSelector({
 	ShowDevices,
@@ -15,9 +15,8 @@ export default function DeviceSelector({
 	curInfo?: SongState;
 	setDevicesOverlay: (e: boolean) => any;
 }) {
-	if (!curInfo?.devices) return;
-
-	function ActiveDevice() {
+	const [devices, setDevices] = useState<React.JSX.Element | undefined>();
+	useEffect(() => {
 		const dev = (
 			<div
 				className="p-4 flex flex-col rounded-lg m y-8"
@@ -28,9 +27,9 @@ export default function DeviceSelector({
 				<span className="text-xl font-extrabold flex items-center">No active device</span>
 			</div>
 		);
-		if (!curInfo?.devices) return dev;
-		if (!curInfo?.deviceId) return dev;
-		return (
+		if (!curInfo?.devices) return setDevices(dev);
+		if (!curInfo?.deviceId) return setDevices(dev);
+		setDevices(
 			<div
 				className="p-4 flex flex-col rounded-lg m y-8"
 				style={{
@@ -39,7 +38,7 @@ export default function DeviceSelector({
 				}}>
 				<span className="text-xl font-extrabold flex items-center">
 					<DeviceIcon
-						className="fill-primarySpotify mx-1"
+						className="fill-primarySpotify mx-1 size-5"
 						deviceType={curInfo?.devices[curInfo.deviceId].device_type}
 					/>
 					Current device
@@ -47,7 +46,7 @@ export default function DeviceSelector({
 				{curInfo?.devices[curInfo.deviceId].name}
 			</div>
 		);
-	}
+	}, [SpotifyClient, curInfo, setDevicesOverlay]);
 
 	return (
 		<div
@@ -59,7 +58,7 @@ export default function DeviceSelector({
 				onClick={() => setDevicesOverlay(false)}>
 				<Close />
 			</div>
-			<ActiveDevice />
+			{devices}
 			<div className="my-2">Select a device</div>
 			{Object.keys(curInfo?.devices || {}).map((deviceId) => {
 				if (!curInfo?.devices) return;
@@ -74,7 +73,7 @@ export default function DeviceSelector({
 							return SpotifyClient?.setDevice(deviceId);
 						}}>
 						<DeviceIcon
-							className="m-2"
+							className="m-2 fill-white"
 							deviceType={device.device_type}
 						/>
 						{device.name}

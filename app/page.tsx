@@ -251,11 +251,7 @@ export default function Home() {
 		});
 	};
 	return (
-		<div
-			className={`overflow-hidden flex flex-col w-dvw h-dvh `}
-			style={{
-				background: "linear-gradient(var(--light-color), var(--dark-color), black);",
-			}}>
+		<div className={`overflow-hidden flex flex-col w-dvw h-dvh `}>
 			<Backdrop
 				curInfo={curInfo}
 				curInfoExtra={curInfoExtra}
