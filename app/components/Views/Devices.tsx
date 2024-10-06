@@ -2,12 +2,15 @@ import { Spotify } from "@/app/lib/api";
 import { SongState } from "@/app/lib/types";
 import { Close, DeviceIcon } from "../icons";
 import { ButtonWithFetchState } from "../components";
+import { useEffect } from "react";
 
 export default function DeviceSelector({
+	ShowDevices,
 	SpotifyClient,
 	curInfo,
 	setDevicesOverlay,
 }: {
+	ShowDevices: boolean;
 	SpotifyClient?: Spotify;
 	curInfo?: SongState;
 	setDevicesOverlay: (e: boolean) => any;
@@ -45,8 +48,12 @@ export default function DeviceSelector({
 			</div>
 		);
 	}
+
 	return (
-		<div className="fixed w-dvw h-dvh bg-neutral-900 z-10 px-4 py-4">
+		<div
+			className={`fixed w-dvw h-dvh bg-neutral-900 z-10 px-4 py-4 ${
+				ShowDevices ? "top-0" : "top-full"
+			} transition-all`}>
 			<div
 				className="flex justify-end pb-4"
 				onClick={() => setDevicesOverlay(false)}>

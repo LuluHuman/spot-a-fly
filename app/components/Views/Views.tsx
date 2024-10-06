@@ -67,8 +67,8 @@ export default function View({
 			{viewType === undefined ? defaultView : <></>}
 			{viewType == 0 ? (
 				lyricsView ? (
-					<div className="extraContainer h-full">
-						<div className="extra p-3">{lyricsView}</div>
+					<div className="overflow-y-scroll text-2xl font-bold clip-path h-full relative">
+						<div className="extra absolute w-full p-3">{lyricsView}</div>
 					</div>
 				) : (
 					defaultView

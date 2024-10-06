@@ -4,10 +4,14 @@ import "./style.css";
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-import { Close, DeviceIcon, Explicit, LyricsIcon, Queue } from "./components/icons";
+import { Explicit, LyricsIcon, Queue } from "./components/icons";
 import OverflowText from "./components/OverflowText";
-import { ButtonWithFetchState, Timestamp } from "./components/components";
+import { Timestamp } from "./components/components";
 import { DeviceCurrenlyPlaying, Buttons, AddToButton } from "./components/Buttons";
+import View from "./components/Views/Views";
+import AddToView from "./components/Views/AddTo";
+import DeviceSelector from "./components/Views/Devices";
+
 import { Musixmatch, Spotify, URIto } from "./lib/api";
 import {
 	PlayerState,
@@ -17,13 +21,8 @@ import {
 	EditablePlaylist,
 	SongState,
 } from "./lib/types";
-
 import { findLyrics } from "./lib/lyricFinder";
 import { collectState, collectStateExtra } from "./lib/collectState";
-import View from "./components/Views/Views";
-import AddToView from "./components/Views/AddTo";
-import DeviceSelector from "./components/Views/Devices";
-
 import { useSearchParams } from "next/navigation";
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
@@ -60,8 +59,6 @@ export default function Home() {
 	const [state, setPlayerState] = useState<SpotifyWebhook["payloads"][0]["cluster"]>();
 	const [curInfoExtra, setInfoExtra] = useState<SongStateExtra>(blankState);
 	const [curInfo, setInfo] = useState<SongState>(blankState);
-	const [isPaused, setPaused] = useState<boolean>(true);
-	const currentInveral = useRef<NodeJS.Timeout>();
 
 	//! Modal History, Info
 	const modalHistory = useRef([]);
@@ -69,6 +66,7 @@ export default function Home() {
 		useState<EditablePlaylist["data"]["me"]["editablePlaylists"]>();
 
 	//! View related things
+	// const [playerHidden, setPlayerHidden] = useState(false);
 	const [ShowDevices, setDevicesOverlay] = useState<boolean>(false);
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
@@ -83,6 +81,9 @@ export default function Home() {
 	//! Timekeeper
 	const [curProgressMs, setCurProgressMs] = useState<number>(0);
 	const curDurationMs = useRef<number>(0);
+	const curTimestampMs = useRef<number>();
+	const [isPaused, setPaused] = useState<boolean>(true);
+	const currentInveral = useRef<NodeJS.Timeout>();
 
 	if (v !== lastV.current) {
 		lastV.current = v;
@@ -155,8 +156,10 @@ export default function Home() {
 		curDurationMs.current = songDuration;
 
 		const timestamp = parseInt(player_state.timestamp);
+		const latency = performance.timeOrigin + performance.now() - timestamp;
+
 		const ms = parseInt(player_state.position_as_of_timestamp);
-		const startTimestamp = timestamp - ms;
+		const startTimestamp = timestamp - ms + (latency > 1000 ? 0 : latency);
 
 		setCurProgressMs(ms);
 
@@ -173,37 +176,35 @@ export default function Home() {
 
 		if (lastTrackUri.current == trackUri) {
 			collectState(trackId, SpotifyClient, state).then((changedState) => {
-				console.log("Changed info: ", changedState);
+				console.info("Changed info: ", changedState);
 				setInfo(changedState);
 			});
 			collectStateExtra(SpotifyClient, state).then((changedState) => {
-				console.log("Changed info(Promises): ", changedState);
+				console.info("Changed info(Promises): ", changedState);
 				setInfoExtra(changedState);
 			});
-
 			return;
 		}
 		lastTrackUri.current = trackUri;
 
 		setLyricsText(undefined);
-		setLyrics(undefined);
+		setLyrics([]);
 
 		SpotifyClient.getColors(player_state.track.metadata.image_xlarge_url).then(
 			(fetchColours: any) => {
-				if (!fetchColours.data) {
-					document.body.style.setProperty("--dark-color", "");
-					document.body.style.setProperty("--light-color", "");
-					return;
-				}
-				const Colors = fetchColours.data.extractedColors[0];
-				document.body.style.setProperty("--dark-color", Colors.colorDark.hex);
-				document.body.style.setProperty("--light-color", Colors.colorLight.hex);
+				const Colors = fetchColours.data ? fetchColours.data.extractedColors[0] : undefined;
+				const [dark, light] = Colors
+					? [Colors.colorDark.hex, Colors.colorLight.hex]
+					: ["", ""];
+				document.body.style.setProperty("--dark-color", dark);
+				document.body.style.setProperty("--light-color", light);
 			}
 		);
 		collectState(trackId, SpotifyClient, state).then((changedState: SongState) => {
-			console.log("Info(No promises): ", changedState);
-			setInfo(changedState);
+			console.info("Info(No promises): ", changedState);
 			document.title = `${changedState?.title} • ${changedState.artist}`;
+
+			setInfo(changedState);
 			findLyrics(
 				{ cache, SpotifyClient, mxmClient: mxmClient?.current },
 				{
@@ -212,7 +213,11 @@ export default function Home() {
 					artist: changedState.artist,
 				}
 			).then(({ source, type, data, copyright }) => {
-				if (data == "not-found") return setLyricsText(undefined);
+				if (data == "not-found") {
+					setLyrics(undefined);
+					setLyricsText(undefined);
+					return;
+				}
 
 				lyricType.current = type;
 				const cpyAttribute = copyright ? "\n" + copyright : "";
@@ -221,7 +226,7 @@ export default function Home() {
 			});
 		});
 		collectStateExtra(SpotifyClient, state).then((changedState: SongStateExtra) => {
-			console.log("Info(Promises): ", changedState);
+			console.info("Info(Promises): ", changedState);
 			setInfoExtra(changedState);
 
 			if (!changedState?.queue[0]) return;
@@ -246,7 +251,11 @@ export default function Home() {
 		});
 	};
 	return (
-		<>
+		<div
+			className={`overflow-hidden flex flex-col w-dvw h-dvh `}
+			style={{
+				background: "linear-gradient(var(--light-color), var(--dark-color), black);",
+			}}>
 			<Backdrop
 				curInfo={curInfo}
 				curInfoExtra={curInfoExtra}
@@ -266,15 +275,12 @@ export default function Home() {
 				<></>
 			)}
 
-			{ShowDevices ? (
-				<DeviceSelector
-					SpotifyClient={SpotifyClient}
-					curInfo={curInfo}
-					setDevicesOverlay={setDevicesOverlay}
-				/>
-			) : (
-				<></>
-			)}
+			<DeviceSelector
+				ShowDevices={ShowDevices}
+				SpotifyClient={SpotifyClient}
+				curInfo={curInfo}
+				setDevicesOverlay={setDevicesOverlay}
+			/>
 
 			<Context curInfo={curInfoExtra} />
 			<div className="overflow-scroll w-full flex flex-col items-stretch flex-1">
@@ -298,7 +304,7 @@ export default function Home() {
 					curProgressMs={curProgressMs}
 				/>
 			</div>
-			<div className="track px-4">
+			<div className="box-shadow flex flex-col w-full h-fit overflow-hidden z-[1] rounded-t-lg px-4">
 				<div className="flex items-center justify-between py-3 w-full">
 					<SongInfo
 						curInfo={curInfo}
@@ -345,7 +351,7 @@ export default function Home() {
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 }
 
@@ -394,8 +400,9 @@ function Track({
 			}}>
 			<div
 				id="track"
-				className="flex">
+				className="flex w-full h-1 bg-lightly rounded-full">
 				<div
+					className="bg-[var(--dark-color)] w-[var(--width)] h-full rounded-full"
 					style={
 						{
 							"--width": `${
@@ -404,7 +411,7 @@ function Track({
 						} as React.CSSProperties
 					}
 				/>
-				<span className="size-2 bg-white inline-block rounded-full relative -top-[1.7px] -left-1"></span>
+				<span className="size-2 bg-[var(--light-color)] inline-block rounded-full relative -top-[1.7px] -left-1"></span>
 			</div>
 			<div className="flex w-full justify-between *:text-xs">
 				<Timestamp ms={curProgressMs} />
@@ -421,8 +428,8 @@ function Backdrop({
 	curInfo?: SongState;
 	curInfoExtra: SongStateExtra;
 }) {
-	return curInfoExtra?.canvasUrl ? (
-		<div className="absolute z-[-1] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
+	return curInfoExtra?.canvasUrl || curInfoExtra?.canvasUrl?.endsWith("jpg") ? (
+		<div className="absolute z-[0] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
 			<video
 				src={curInfoExtra?.canvasUrl}
 				loop
@@ -431,7 +438,7 @@ function Backdrop({
 			/>
 		</div>
 	) : (
-		<div className="-z-[1] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none">
+		<div className="z-[0] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none">
 			{curInfo && curInfo.image ? (
 				["Front", "Back", "BackCenter"].map((classes) => (
 					<Image
@@ -456,7 +463,7 @@ function Backdrop({
 
 function Context({ curInfo }: { curInfo?: SongStateExtra }) {
 	return (
-		<div className="playback flex items-center py-3">
+		<div className=" z-[1] playback flex items-center py-3">
 			<div className="text-xs text-center w-full">
 				<p>{curInfo?.context?.header}</p>
 				<p>{curInfo?.context?.name || "-"}</p>
@@ -478,7 +485,7 @@ function SongInfo({
 		<div className="playback flex items-center overflow-hidden">
 			{viewType !== undefined ? (
 				<Image
-					className="size-12 mr-2"
+					className="size-12 mr-2 rounded-md aspect-square bg-[#282828] border-none block"
 					alt="alb-img"
 					width={64}
 					height={64}
@@ -490,13 +497,15 @@ function SongInfo({
 				<></>
 			)}
 			<div className="w-full h-12 content-center overflow-hidden">
-				<div className="playingTitle text-base w-full">
+				<div className="text-base w-full font-bold text-nowrap">
 					<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
 				</div>
 
 				<div className="grid grid-flow-col gap-1 w-fit items-center">
 					{curInfo?.isExplicit ? <Explicit /> : ""}
-					<OverflowText className="playingArtist text-xs">{curInfo?.artist}</OverflowText>
+					<OverflowText className="w-full text-nowrap overflow-hidden text-xs">
+						{curInfo?.artist}
+					</OverflowText>
 				</div>
 			</div>
 		</div>

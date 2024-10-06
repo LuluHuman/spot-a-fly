@@ -5,18 +5,7 @@
 	font-family: SpotifyMixUI-Regular;
 	src: url("/SpotifyMixUI-Regular.woff2");
 }
-
-body {
-	color: white;
-	margin: 0;
-	padding: 0;
-	font-family: SpotifyMixUI-Regular;
-	width: 100vw;
-	height: 100dvh;
-	background: linear-gradient(var(--light-color), var(--dark-color), black);
-	overflow: hidden;
-	display: flex;
-	flex-direction: column;
+:root {
 	--light-color: #5c5c5c;
 	--dark-color: #121212;
 	--text-shadow-blur-radius: 4px;
@@ -28,6 +17,9 @@ body {
 	--text-shadow-opacity: 51%;
 	--gradient-progress: 100%;
 }
+body {
+	font-family: SpotifyMixUI-Regular;
+}
 
 a:hover {
 	text-decoration: underline;
@@ -36,51 +28,19 @@ a:hover {
 	syntax: "<percentage>";
 }
 
-.track {
-	display: flex;
-	flex-direction: column;
-
-	width: -moz-available;
-	width: -webkit-fill-available;
-	height: fit-content;
-
-	overflow: hidden;
-
-	z-index: 1;
+.box-shadow {
 	box-shadow: 0px 10px 5px #000, 0px 0px 5px #000;
-	border-radius: 5px 5px 0px 0px;
 }
-.extraContainer {
-	width: -moz-available;
-	width: -webkit-fill-available;
-	overflow-y: scroll;
-	font-size: 24px;
-	font-weight: 700;
+.clip-path {
 	clip-path: border-box;
-	position: relative;
-}
-
-.extra {
-	position: absolute;
-	width: -moz-available;
-	width: -webkit-fill-available;
 }
 
 .extra::-webkit-scrollbar {
 	display: none;
 }
 
-.extra > .lyrLine {
-	font-size: 20px;
-	margin: 4px;
+.gradient-color {
 	color: rgba(255, 255, 255, var(--gradient-color-alpha));
-	transition: 0.1s;
-	filter: blur(1px);
-	width: 100%;
-}
-
-.extra > .lyrLine > .bg {
-	font-size: 13px;
 }
 
 .extra > .instrumental {
@@ -153,73 +113,6 @@ div.extra > button.lineActive > span.bg {
 			calc(var(--gradient-progress) + 20%)
 	);
 }
-.extra > div > .queueItem {
-	color: white;
-	background-color: var(--dark -color);
-	border-radius: 8px;
-}
-
-.queueItem {
-	font-weight: 400;
-	display: flex;
-	padding: 8px 0;
-}
-
-.queueItem > div {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	text-wrap: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
-}
-.queueItem > img {
-	border-radius: 4px;
-	width: 48px;
-	height: 48px;
-	margin-right: 8px;
-	background: #282828;
-}
-
-.contextTitle {
-	font-size: 16px;
-	width: 100%;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	display: flex;
-	align-items: center;
-	text-wrap: nowrap;
-}
-
-.playback > img {
-	border-radius: 4px;
-	aspect-ratio: 1/1;
-	background: #282828;
-	border: none;
-	display: block;
-}
-
-.playingTitle {
-	font-weight: 700;
-	width: 100%;
-	/* overflow: hidden; */
-	text-wrap: nowrap;
-}
-
-.playingArtist {
-	color: rgba(255, 255, 255, 0.7);
-	width: 100%;
-	overflow: hidden;
-	text-wrap: nowrap;
-}
-.activeDevice {
-	color: #1abc54;
-	font-size: 16px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	text-wrap: nowrap;
-}
-
 /*  */
 @keyframes onAnimate {
 	0% {
@@ -290,15 +183,11 @@ div.extra > button.lineActive > span.bg {
 }
 
 .instrumentalText.animation > span {
-	width: 10px;
-	height: 10px;
 	animation-name: onAnimate;
 	animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
 	animation-iteration-count: infinite;
 }
 .instrumentalText.animation-end > span {
-	width: 0px;
-	height: 0px;
 	animation-name: animateEnd;
 	animation-duration: 1s;
 	animation-timing-function: cubic-bezier(0.47, 0, 0.74, 0.71);
@@ -342,16 +231,6 @@ button:active {
 	opacity: 0.5;
 }
 
-#track {
-	width: 100%;
-	height: 4px;
+.bg-lightly {
 	background: rgba(255, 255, 255, 0.3);
-	border-radius: 25px;
-}
-
-#track > div {
-	width: var(--width);
-	height: 100%;
-	background: white;
-	border-radius: 25px;
 }

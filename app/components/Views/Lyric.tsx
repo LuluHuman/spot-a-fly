@@ -81,8 +81,11 @@ function parseLines(
 	var element: React.JSX.Element | React.JSX.Element[] = rawElement;
 
 	const inRange = curMs >= msStart && !(curMs >= msEnd);
-	const lineType = isInstrumental ? "instrumental " : "lyrLine ";
-	const lineAignment = isOppositeAligned ? "text-right " : "text-left";
+	const lineType = isInstrumental
+		? "instrumental "
+		: "gradient-color lyrLine text-xl m-1 transition blur-[1px] w-full ";
+
+	const lineAignment = isOppositeAligned ? "text-right " : "text-left ";
 
 	var lineActive = "";
 	var gradientProgress = 0;
@@ -93,7 +96,7 @@ function parseLines(
 			const inSylRange = curMs >= msStart;
 
 			const ad = !inSylRange ? "sylInactive" : "sylActive";
-			const bgClass = isBackground ? "bg " : "";
+			const bgClass = isBackground ? "text-sm " : "";
 			const startOffset = curMs - msStart;
 			const endOffset = msEnd - msStart;
 			const p = (startOffset / endOffset) * 100;

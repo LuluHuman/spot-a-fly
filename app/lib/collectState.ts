@@ -4,6 +4,7 @@ import { PlayerState, SongStateExtra, Cluster, NextTracks, NextTrack, SongState 
 const blank =
     "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 
+var LastUpdateExtra: any = {}
 var LastUpdate: any = {}
 var LastState = {
     queue_revision: "",
@@ -17,6 +18,7 @@ export async function collectStateExtra(
     const player_state = (state?.player_state || state) as PlayerState;
 
     const getCanvas = async () => {
+        if (LastState.trackUri == player_state.track.uri) return LastUpdateExtra.canvasUrl
         if (!player_state.track.uri.startsWith("spotify:track")) return undefined
         const canvasReq = await SpotifyClient.getCanvas(player_state.track.uri) as any
         const canvas = canvasReq.data.trackUnion.canvas
@@ -25,7 +27,7 @@ export async function collectStateExtra(
     }
 
     const getQueue = async () => {
-        if (player_state.queue_revision == LastState.queue_revision && LastUpdate.queue) return LastUpdate.queue
+        if (player_state.queue_revision == LastState.queue_revision && LastUpdateExtra.queue) return LastUpdateExtra.queue
         LastState.queue_revision = player_state.queue_revision
 
         const queueArr = []
@@ -110,12 +112,15 @@ export async function collectStateExtra(
     }
 
     const [canvasUrl, isSaved, context, queue] = await Promise.all([getCanvas(), getLikedStatus(), getContextName(), getQueue()])
-    const changedState: SongStateExtra = { canvasUrl, isSaved, context, queue };
+    const changedState: SongStateExtra = {
+        canvasUrl, isSaved, context, queue
+    };
 
     if (player_state.track.metadata["source-loader"])
         console.log(player_state.track.metadata["source-loader"]);
 
-    LastUpdate = changedState
+    LastState.trackUri = player_state.track.uri
+    LastUpdateExtra = changedState
     return changedState
 }
 
@@ -127,7 +132,7 @@ export async function collectState(
     const player_state = (state?.player_state || state) as PlayerState;
 
     async function getTrackMetadata() {
-        LastState.trackUri == player_state.track.uri
+        if (LastState.trackUri == player_state.track.uri) return
         if (player_state.track.uri.includes("local")) return { album: undefined, original_title: undefined, explicit: undefined, artist: undefined }
         return (await SpotifyClient.getTrackMetadata(trackId)) as {
             album: any;
@@ -185,6 +190,7 @@ export async function collectState(
     if (player_state.track.metadata["source-loader"])
         console.log(player_state.track.metadata["source-loader"]);
 
+    LastState.trackUri = player_state.track.uri
     LastUpdate = changedState
     return changedState
 }
