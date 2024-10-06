@@ -66,7 +66,6 @@ export default function Home() {
 		useState<EditablePlaylist["data"]["me"]["editablePlaylists"]>();
 
 	//! View related things
-	// const [playerHidden, setPlayerHidden] = useState(false);
 	const [ShowDevices, setDevicesOverlay] = useState<boolean>(false);
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
@@ -425,7 +424,7 @@ function Backdrop({
 	curInfoExtra: SongStateExtra;
 }) {
 	return curInfoExtra?.canvasUrl || curInfoExtra?.canvasUrl?.endsWith("jpg") ? (
-		<div className="absolute z-[0] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
+		<div className="absolute -z-[1] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
 			<video
 				src={curInfoExtra?.canvasUrl}
 				loop
@@ -434,7 +433,7 @@ function Backdrop({
 			/>
 		</div>
 	) : (
-		<div className="z-[0] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none">
+		<div className="-z-[1] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none">
 			{curInfo && curInfo.image ? (
 				["Front", "Back", "BackCenter"].map((classes) => (
 					<Image

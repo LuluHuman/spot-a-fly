@@ -1,5 +1,6 @@
 import {
 	AddToPlaylist,
+	DeviceIcon,
 	Devices,
 	NextIcon,
 	PauseIcon,
@@ -25,7 +26,13 @@ export function DeviceCurrenlyPlaying({
 		<button
 			className="my-3 flex items-center  *:mx-1 *:text-primarySpotify *:fill-primarySpotify"
 			onClick={() => setDevicesOverlay(true)}>
-			<Devices />
+			<DeviceIcon
+				deviceType={
+					curInfo?.deviceId && curInfo?.devices
+						? curInfo?.devices[curInfo.deviceId].device_type
+						: ""
+				}
+			/>
 			<span>{curInfo?.deviceText || "No active device"}</span>
 		</button>
 	);
