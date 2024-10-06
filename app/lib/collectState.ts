@@ -170,6 +170,7 @@ export async function collectState(
         isExplicit: (trackMetadata ? trackMetadata.explicit : LastUpdate.isExplicit) || false,
         deviceId: state.active_device_id,
         deviceText: device ? device.audio_output_device_info?.device_name || device.name : "",
+        devices: state.devices,
         title,
         artist: getArtist(),
         image: getSongImage(),

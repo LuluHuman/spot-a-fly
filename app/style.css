@@ -36,14 +36,6 @@ a:hover {
 	syntax: "<percentage>";
 }
 
-body > #side {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	flex: 1;
-}
-
 .track {
 	display: flex;
 	flex-direction: column;
@@ -163,7 +155,7 @@ div.extra > button.lineActive > span.bg {
 }
 .extra > div > .queueItem {
 	color: white;
-	background-color: var(--light-color);
+	background-color: var(--dark -color);
 	border-radius: 8px;
 }
 
@@ -313,19 +305,6 @@ div.extra > button.lineActive > span.bg {
 	animation-iteration-count: 1;
 }
 
-#bg {
-	z-index: -1;
-	width: 100%;
-	height: 100%;
-	position: fixed;
-	filter: saturate(2.5) brightness(0.65);
-	overflow: hidden;
-	max-height: 55%;
-	max-width: 35%;
-	scale: 290% 185%;
-	transform-origin: left top;
-	pointer-events: none;
-}
 img.Front {
 	right: 0;
 	top: 0;
@@ -349,12 +328,6 @@ img.BackCenter {
 .Back,
 .BackCenter {
 	animation: a 20s linear infinite;
-	border-radius: 100em;
-	filter: blur(40px);
-	position: absolute;
-	width: 200%;
-	max-width: 200%;
-	height: auto;
 }
 /* 
 .sylActive {

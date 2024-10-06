@@ -120,14 +120,14 @@ export function AddToPlaylist() {
 
 export function Saved({ className }: { className?: SVGAttributes<SVGElement>["className"] }) {
 	return (
-		<Icon className={`${className} fill-[#1ed760]`}>
+		<Icon className={`${className} fill-primarySpotify`}>
 			<path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm11.748-1.97a.75.75 0 0 0-1.06-1.06l-4.47 4.47-1.405-1.406a.75.75 0 1 0-1.061 1.06l2.466 2.467 5.53-5.53z"></path>
 		</Icon>
 	);
 }
 export function Pinned() {
 	return (
-		<Icon className="h-4 m-2 fill-[#1ed760]">
+		<Icon className="h-4 m-2 fill-primarySpotify">
 			<title>Pinned</title>
 			<path d="M8.822.797a2.72 2.72 0 0 1 3.847 0l2.534 2.533a2.72 2.72 0 0 1 0 3.848l-3.678 3.678-1.337 4.988-4.486-4.486L1.28 15.78a.75.75 0 0 1-1.06-1.06l4.422-4.422L.156 5.812l4.987-1.337L8.822.797z"></path>
 		</Icon>
@@ -139,4 +139,52 @@ export function LeftArrow() {
 			<path d="M8.81 1A.749.749 0 0 0 7.53.47L0 7.99l7.53 7.521a.75.75 0 0 0 1.234-.815.75.75 0 0 0-.174-.243L2.87 8.74h12.38a.75.75 0 1 0 0-1.498H2.87l5.72-5.713c.14-.14.22-.331.22-.53z"></path>
 		</Icon>
 	);
+}
+
+export function Close() {
+	return (
+		<Icon className="fill-white size-7">
+			<path d="M2.47 2.47a.75.75 0 0 1 1.06 0L8 6.94l4.47-4.47a.75.75 0 1 1 1.06 1.06L9.06 8l4.47 4.47a.75.75 0 1 1-1.06 1.06L8 9.06l-4.47 4.47a.75.75 0 0 1-1.06-1.06L6.94 8 2.47 3.53a.75.75 0 0 1 0-1.06Z"></path>
+		</Icon>
+	);
+}
+
+export function DeviceIcon({
+	deviceType,
+	className,
+}: {
+	deviceType: string;
+	className?: SVGAttributes<SVGElement>["className"];
+}) {
+	switch (deviceType) {
+		case "COMPUTER":
+			return (
+				<svg
+					viewBox="0 0 24 24"
+					className={"fill-white size-5 " + className}>
+					<path d="M0 21a1 1 0 0 1 1-1h22a1 1 0 1 1 0 2H1a1 1 0 0 1-1-1zM3 5a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V5zm3-1a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H6z"></path>
+				</svg>
+			);
+
+		case "SMARTPHONE":
+			return (
+				<svg
+					viewBox="0 0 24 24"
+					className={"fill-white size-5 " + className}>
+					<path d="M5 5a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V5zm3-1a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H8z"></path>
+					<path d="M13.25 16.75a1.25 1.25 0 1 1-2.5 0 1.25 1.25 0 0 1 2.5 0z"></path>
+				</svg>
+			);
+		case "SMARTWATCH":
+			return (
+				<svg
+					viewBox="0 0 24 24"
+					className={"fill-white size-5 " + className}>
+					<path d="M6.916 1.584A2 2 0 0 1 8.873 0h6.4a2 2 0 0 1 1.957 1.584l.761 3.584A3.001 3.001 0 0 1 20 8v8a3 3 0 0 1-2.009 2.832l-.761 3.584A2 2 0 0 1 15.273 24h-6.4a2 2 0 0 1-1.957-1.584l-.75-3.534A3.001 3.001 0 0 1 4 16V8c0-1.367.915-2.52 2.165-2.882l.751-3.534zM8.235 5h7.676l-.637-3H8.873l-.638 3zm0 14 .638 3h6.4l.638-3H8.235zM7 7a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H7z"></path>
+				</svg>
+			);
+
+		default:
+			return <Devices />;
+	}
 }

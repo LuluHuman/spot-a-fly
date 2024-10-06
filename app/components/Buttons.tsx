@@ -1,4 +1,5 @@
 import {
+	AddToPlaylist,
 	Devices,
 	NextIcon,
 	PauseIcon,
@@ -6,18 +7,27 @@ import {
 	PrevIcon,
 	Repeat,
 	RepeatOne,
+	Saved,
 	Shuffle,
 } from "./icons";
-import { SongState } from "../lib/types";
+import { EditablePlaylist, SongState, SongStateExtra } from "../lib/types";
 import { Spotify } from "../lib/api";
 import { ButtonWithFetchState } from "./components";
 
-export function DeviceCurrenlyPlaying({ curInfo }: { curInfo?: SongState }) {
+export function DeviceCurrenlyPlaying({
+	curInfo,
+	setDevicesOverlay,
+}: {
+	curInfo?: SongState;
+	setDevicesOverlay: (s: boolean) => any;
+}) {
 	return (
-		<div className="my-3 flex items-center  *:mx-1 *:text-[#1ed760] *:fill-[#1ed760]">
+		<button
+			className="my-3 flex items-center  *:mx-1 *:text-primarySpotify *:fill-primarySpotify"
+			onClick={() => setDevicesOverlay(true)}>
 			<Devices />
-			<span>{curInfo?.deviceText || "NO DEVICE"}</span>
-		</div>
+			<span>{curInfo?.deviceText || "No active device"}</span>
+		</button>
 	);
 }
 
@@ -32,12 +42,14 @@ export function Buttons({
 	curInfo?: SongState;
 	setErrToast: any;
 }) {
+	const disabled = curInfo?.deviceId === undefined;
 	return (
 		<>
 			<ButtonWithFetchState
+				disabled={disabled}
 				setErrToast={setErrToast}
 				className={`size-10 p-2 my-2 ${
-					curInfo?.options.shuffling_context ? "fill-[#1ed760]" : "fill-white"
+					curInfo?.options.shuffling_context ? "fill-primarySpotify" : "fill-white"
 				}`}
 				clickAction={() =>
 					SpotifyClient?.playback("shuffle", !curInfo?.options.shuffling_context)
@@ -45,27 +57,31 @@ export function Buttons({
 				<Shuffle />
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				disabled={disabled}
 				setErrToast={setErrToast}
 				className="size-12 p-2 my-2 fill-white"
 				clickAction={() => SpotifyClient?.playback("skipPrev")}>
 				<PrevIcon />
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				disabled={disabled}
 				setErrToast={setErrToast}
 				className="size-16 bg-white p-5 rounded-full my-2"
 				clickAction={() => SpotifyClient?.playback(!isPaused ? "pause" : "play")}>
 				{isPaused ? <PauseIcon /> : <PlayIcon />}
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				disabled={disabled}
 				setErrToast={setErrToast}
 				className="size-12 p-2 my-2 fill-white"
 				clickAction={() => SpotifyClient?.playback("skipNext")}>
 				<NextIcon />
 			</ButtonWithFetchState>
 			<ButtonWithFetchState
+				disabled={disabled}
 				setErrToast={setErrToast}
 				className={`size-10 p-2 my-2 ${
-					curInfo?.options.repeating_context ? "fill-[#1ed760]" : "fill-white"
+					curInfo?.options.repeating_context ? "fill-primarySpotify" : "fill-white"
 				}`}
 				clickAction={() => {
 					const states = ["off", "context", "track"];
@@ -81,5 +97,35 @@ export function Buttons({
 				{curInfo?.options.repeating_track ? <RepeatOne /> : <Repeat />}
 			</ButtonWithFetchState>
 		</>
+	);
+}
+
+export function AddToButton({
+	SpotifyClient,
+	curInfo,
+	curInfoExtra,
+	setAddToModal,
+	modalHistory,
+}: {
+	SpotifyClient?: Spotify;
+	curInfo?: SongState;
+	curInfoExtra?: SongStateExtra;
+	setAddToModal: any;
+	modalHistory: any;
+}) {
+	return (
+		<button
+			className="fill-white pl-4"
+			onClick={() => {
+				const songUri = curInfo?.uris.song;
+				if (!songUri || !SpotifyClient) return;
+				SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
+					const playlists = data as EditablePlaylist;
+					modalHistory.current.push(playlists.data.me.editablePlaylists);
+					setAddToModal(playlists.data.me.editablePlaylists);
+				});
+			}}>
+			{curInfoExtra?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
+		</button>
 	);
 }

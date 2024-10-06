@@ -225,6 +225,7 @@ export interface SongState {
     isExplicit: boolean;
     deviceId?: string
     deviceText?: string;
+    devices?: Cluster["devices"]
     title: string;
     artist: string;
     image: string;

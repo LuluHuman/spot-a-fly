@@ -2,13 +2,12 @@
 
 import "./style.css";
 import Image from "next/image";
-import React, { use, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
-import { AddToPlaylist, Explicit, LyricsIcon, Queue, Saved } from "./components/icons";
+import { Close, DeviceIcon, Explicit, LyricsIcon, Queue } from "./components/icons";
 import OverflowText from "./components/OverflowText";
-import { Timestamp } from "./components/components";
-import { DeviceCurrenlyPlaying, Buttons } from "./components/Buttons";
-
+import { ButtonWithFetchState, Timestamp } from "./components/components";
+import { DeviceCurrenlyPlaying, Buttons, AddToButton } from "./components/Buttons";
 import { Musixmatch, Spotify, URIto } from "./lib/api";
 import {
 	PlayerState,
@@ -18,9 +17,12 @@ import {
 	EditablePlaylist,
 	SongState,
 } from "./lib/types";
+
 import { findLyrics } from "./lib/lyricFinder";
 import { collectState, collectStateExtra } from "./lib/collectState";
-import { AddToView, View } from "./components/Views";
+import View from "./components/Views/Views";
+import AddToView from "./components/Views/AddTo";
+import DeviceSelector from "./components/Views/Devices";
 
 import { useSearchParams } from "next/navigation";
 const blank =
@@ -67,6 +69,7 @@ export default function Home() {
 		useState<EditablePlaylist["data"]["me"]["editablePlaylists"]>();
 
 	//! View related things
+	const [ShowDevices, setDevicesOverlay] = useState<boolean>(false);
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
 	const [lyrcs, setLyrics] = useState<Lyrics[]>();
@@ -159,11 +162,11 @@ export default function Home() {
 
 		const _msStep = 50;
 		const inveral = setInterval(() => {
-			if (player_state.is_paused) return clearInterval(inveral);
 			if (currentInveral.current !== inveral) {
 				clearInterval(currentInveral.current);
-				currentInveral.current = inveral as NodeJS.Timeout;
+				currentInveral.current = inveral;
 			}
+			if (player_state.is_paused || !state.active_device_id) return clearInterval(inveral);
 			const ms = performance.timeOrigin + performance.now() - startTimestamp;
 			setCurProgressMs(ms);
 		}, _msStep);
@@ -257,15 +260,24 @@ export default function Home() {
 					SpotifyClient={SpotifyClient}
 					setToast={setToast}
 					modalHistory={modalHistory}
+					isPaused={isPaused}
+				/>
+			) : (
+				<></>
+			)}
+
+			{ShowDevices ? (
+				<DeviceSelector
+					SpotifyClient={SpotifyClient}
+					curInfo={curInfo}
+					setDevicesOverlay={setDevicesOverlay}
 				/>
 			) : (
 				<></>
 			)}
 
 			<Context curInfo={curInfoExtra} />
-			<div
-				id="side"
-				className="overflow-scroll">
+			<div className="overflow-scroll w-full flex flex-col items-stretch flex-1">
 				{toast ? (
 					<Toast
 						toast={toast}
@@ -315,15 +327,18 @@ export default function Home() {
 					/>
 				</div>
 				<div className="my-3 flex items-center justify-between">
-					<DeviceCurrenlyPlaying curInfo={curInfo} />
+					<DeviceCurrenlyPlaying
+						curInfo={curInfo}
+						setDevicesOverlay={setDevicesOverlay}
+					/>
 					<div>
 						<button
-							className={viewType == 0 ? "fill-[#1ed760]" : "fill-white"}
+							className={viewType == 0 ? "fill-primarySpotify" : "fill-white"}
 							onClick={() => buttonClick(0)}>
 							<LyricsIcon />
 						</button>
 						<button
-							className={viewType == 1 ? "fill-[#1ed760]" : "fill-white"}
+							className={viewType == 1 ? "fill-primarySpotify" : "fill-white"}
 							onClick={() => buttonClick(1)}>
 							<Queue />
 						</button>
@@ -416,16 +431,18 @@ function Backdrop({
 			/>
 		</div>
 	) : (
-		<div id="bg">
+		<div className="-z-[1] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none">
 			{curInfo && curInfo.image ? (
 				["Front", "Back", "BackCenter"].map((classes) => (
 					<Image
 						alt="bg"
 						key={classes}
-						className={classes}
+						className={
+							classes + " blur-2xl max-w-none w-[200%] h-auto rounded-full absolute"
+						}
 						width={0}
 						height={0}
-						priority={false}
+						priority={true}
 						unoptimized={true}
 						src={curInfo.image}
 					/>
@@ -472,7 +489,7 @@ function SongInfo({
 			) : (
 				<></>
 			)}
-			<div className="w-full h-12 content-center">
+			<div className="w-full h-12 content-center overflow-hidden">
 				<div className="playingTitle text-base w-full">
 					<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
 				</div>
@@ -483,35 +500,5 @@ function SongInfo({
 				</div>
 			</div>
 		</div>
-	);
-}
-
-function AddToButton({
-	SpotifyClient,
-	curInfo,
-	curInfoExtra,
-	setAddToModal,
-	modalHistory,
-}: {
-	SpotifyClient?: Spotify;
-	curInfo?: SongState;
-	curInfoExtra?: SongStateExtra;
-	setAddToModal: any;
-	modalHistory: any;
-}) {
-	return (
-		<button
-			className="fill-white pl-4"
-			onClick={() => {
-				const songUri = curInfo?.uris.song;
-				if (!songUri || !SpotifyClient) return;
-				SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
-					const playlists = data as EditablePlaylist;
-					modalHistory.current.push(playlists.data.me.editablePlaylists);
-					setAddToModal(playlists.data.me.editablePlaylists);
-				});
-			}}>
-			{curInfoExtra?.isSaved ? <Saved className="h-6" /> : <AddToPlaylist />}
-		</button>
 	);
 }

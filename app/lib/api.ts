@@ -387,6 +387,13 @@ export class Spotify {
 
     //me
     getPlayer() { return this.makeRequest(api + "/me/player") }
+
+    setDevice(deviceId: string) {
+        return this.makeRequest(api + "/me/player", {
+            method: "PUT", body: JSON.stringify({ "device_ids": [deviceId] })
+        })
+
+    }
     getQueue() { return this.makeRequest(api + "/me/player/queue") }
     async SeekTo(position_ms: number) {
         return this.makeRequest(api + "/me/player/seek?position_ms=" + position_ms.toString(), { method: "PUT" });
