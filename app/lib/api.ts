@@ -238,7 +238,8 @@ export class Spotify {
         isAnonymous: boolean,
         clientId: string,
     }
-    ready: () => any
+    isReady: boolean
+    ready: (() => any)[]
     constructor() {
         this.session = {
             accessToken: "",
@@ -246,7 +247,8 @@ export class Spotify {
             isAnonymous: false,
             clientId: "",
         };
-        this.ready = () => console.error("no ready event");
+        this.ready = []
+        this.isReady = false
         this.newSession();
 
     }
@@ -314,6 +316,10 @@ export class Spotify {
     }
 
     //#region Connection
+    addReadyListener(func: () => any) {
+        if (this.isReady) func()
+        this.ready.push(func)
+    }
     newSession() {
         return new Promise((resp, rej) => {
             fetch("/api/session")
@@ -323,7 +329,9 @@ export class Spotify {
                     if (res.accessToken == "") return alert("Error No Access Token");
 
                     this.session = res;
-                    this.ready();
+                    this.isReady = true
+                    this.ready.forEach(f => f());
+                    console.info(`fired ${this.ready.length} ready events`)
                     console.info("Spotify session generated. Token: ", this.session.accessToken);
                     return resp(res);
                 })

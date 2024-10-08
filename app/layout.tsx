@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Player from "./playerRoot";
 
 export const metadata: Metadata = {
 	title: "Spot-a-fly",
@@ -12,9 +13,8 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body
-				className="text-white bg-[#121212] m-0 p-0 w-dvw h-dvh overflow-hidden">
-				{children}
+			<body className="text-white bg-[#121212] m-0 p-0 w-dvw h-dvh overflow-hidden">
+				<Player>{children}</Player>
 			</body>
 		</html>
 	);

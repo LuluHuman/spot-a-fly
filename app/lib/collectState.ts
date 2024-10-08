@@ -34,7 +34,7 @@ export async function collectStateExtra(
 
         const next50Tracks = player_state.next_tracks.slice(0, 50)
         const uris = next50Tracks.map(nextTrack => nextTrack.uri).filter(uri => uri.startsWith("spotify:track"))
-        const queue = await SpotifyClient.decorateTracks(uris).then((data) => (data as unknown as NextTracks).data)
+        const queue = await SpotifyClient.decorateTracks(uris).then((data) => (data as unknown as NextTracks)?.data)
 
         if (!queue) return []
         let i_deco = 0

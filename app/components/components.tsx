@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { Explicit } from "./icons";
 
 export function Timestamp({ ms }: { ms: number }) {
@@ -85,5 +85,41 @@ export function SongCard({
 				</span>
 			</div>
 		</ButtonWithFetchState>
+	);
+}
+
+export function SlideThenHide({
+	children,
+	className,
+	hideTheThing,
+}: {
+	children: React.ReactNode;
+	className: string;
+	hideTheThing: boolean;
+}) {
+	const [hide, setHide] = useState(false);
+	const [slide, setSlide] = useState(false);
+	useEffect(() => {
+		if (!hideTheThing) {
+			setHide(false);
+			setTimeout(() => {
+				setSlide(false);
+			}, 100);
+		} else {
+			setSlide(true);
+			setTimeout(() => {
+				setHide(true);
+			}, 100);
+		}
+	}, [hideTheThing]);
+
+	return (
+		<div
+			className={
+				className +
+				` transition-all ${slide ? "top-full" : "top-0"} ${hide ? "hidden" : ""}`
+			}>
+			{children}
+		</div>
 	);
 }

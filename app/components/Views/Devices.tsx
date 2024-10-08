@@ -1,7 +1,7 @@
 import { Spotify } from "@/app/lib/api";
 import { SongState } from "@/app/lib/types";
 import { Close, DeviceIcon } from "../icons";
-import { ButtonWithFetchState } from "../components";
+import { ButtonWithFetchState, SlideThenHide } from "../components";
 import React, { useEffect, useState } from "react";
 
 export default function DeviceSelector({
@@ -49,10 +49,9 @@ export default function DeviceSelector({
 	}, [SpotifyClient, curInfo, setDevicesOverlay]);
 
 	return (
-		<div
-			className={`fixed w-dvw h-dvh bg-neutral-900 z-10 px-4 py-4 ${
-				ShowDevices ? "top-0" : "top-full"
-			} transition-all`}>
+		<SlideThenHide
+			className={`fixed w-dvw h-dvh bg-neutral-900 z-10 px-4 py-4`}
+			hideTheThing={!ShowDevices}>
 			<div
 				className="flex justify-end pb-4"
 				onClick={() => setDevicesOverlay(false)}>
@@ -80,6 +79,6 @@ export default function DeviceSelector({
 					</ButtonWithFetchState>
 				);
 			})}
-		</div>
+		</SlideThenHide>
 	);
 }
