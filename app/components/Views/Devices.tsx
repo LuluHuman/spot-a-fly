@@ -5,7 +5,7 @@ import { ButtonWithFetchState, SlideThenHide } from "../components";
 import React, { useEffect, useState } from "react";
 
 export default function DeviceSelector({
-	ShowDevices,
+	ShowDevices = false,
 	SpotifyClient,
 	curInfo,
 	setDevicesOverlay,

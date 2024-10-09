@@ -117,7 +117,7 @@ export default function AddToView({
 		);
 	}
 	return (
-		<div className="fixed w-dvw h-dvh bg-neutral-900 z-10 px-4">
+		<div className="fixed w-dvw h-dvh bg-neutral-900 z-30 px-4">
 			<div className="flex items-center py-4 justify-between">
 				<button
 					className="px-3"

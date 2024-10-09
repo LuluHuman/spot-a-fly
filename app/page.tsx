@@ -16,14 +16,15 @@ export default function Home() {
 
 		SpotifyClient.addReadyListener(() => {
 			SpotifyClient.getMe().then((me) => {
+				if (!me) return;
 				console.log(me, "SpotifyClient");
 				setUser(me);
 			});
 			SpotifyClient.getLibrary().then((data) => {
 				const datadata = (data as any).data;
-				if (!datadata) return;
+				if (!datadata || !datadata.me) return;
 
-				const libraryV3items = datadata.me.libraryV3.items;
+				const libraryV3items = datadata.me?.libraryV3.items;
 				setLibraryItems(libraryV3items);
 			});
 		});
@@ -39,7 +40,7 @@ export default function Home() {
 					height={0}
 					priority={false}
 					unoptimized={true}
-					src={user?.images[0].url || blank}
+					src={(user?.images ? user?.images[0].url : undefined) || blank}
 				/>
 				<span>Your Library</span>
 			</h1>

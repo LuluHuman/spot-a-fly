@@ -57,7 +57,7 @@ export const fetchLyrics = {
             mxm.searchSong(title, artist).then(async (searchRes: any) => {
                 if (!searchRes) return res([])
                 const searchBody = searchRes?.message.body
-                if (!searchBody) return res([])
+                if (!searchBody || !searchBody.track_list) return res([])
                 const firstResult = searchBody.track_list[0]
                 if (!firstResult) return res([])
                 const trackId = firstResult.track.track_id

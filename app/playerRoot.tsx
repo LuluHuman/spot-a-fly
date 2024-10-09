@@ -2,9 +2,19 @@
 
 import "./style.css";
 import Image from "next/image";
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, {
+	createContext,
+	Dispatch,
+	MouseEventHandler,
+	SetStateAction,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 
 import {
+	AddToPlaylist,
 	DeviceIcon,
 	Devices,
 	DownArrow,
@@ -14,6 +24,7 @@ import {
 	PauseIcon,
 	PlayIcon,
 	Queue,
+	Repeat,
 } from "./components/icons";
 import OverflowText from "./components/OverflowText";
 import { ButtonWithFetchState, SlideThenHide, Timestamp } from "./components/components";
@@ -86,6 +97,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 
 	//! View related things
 	const [ShowDevices, setDevicesOverlay] = useState<boolean>(false);
+	const [hidePlayerOptions, setPlayerOptionsHidden] = useState<boolean>(true);
 	const [hidePlayer, setPlayerHidden] = useState<boolean>(true);
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
@@ -364,7 +376,16 @@ export default function Player({ children }: { children: React.ReactNode }) {
 					</div>
 				</div>
 			</SpotifyContext.Provider>
-
+			<PlayerOptionsMenu
+				SpotifyClient={SpotifyClient}
+				curInfo={curInfo}
+				hideState={{
+					hideTheThing: hidePlayerOptions,
+					sethideTheThing: setPlayerOptionsHidden,
+				}}
+				modalState={{ modalHistory, setAddToModal }}
+				isPaused={isPaused}
+			/>
 			<SlideThenHide
 				className={`overflow-hidden flex flex-col w-dvw h-dvh fixed`}
 				hideTheThing={hidePlayer}>
@@ -376,6 +397,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 				<Context
 					curInfo={curInfoExtra}
 					setPlayerHidden={setPlayerHidden}
+					setPlayerOptionsHidden={setPlayerOptionsHidden}
 				/>
 				<div className="overflow-scroll w-full flex flex-col items-stretch flex-1">
 					<View
@@ -451,6 +473,127 @@ export default function Player({ children }: { children: React.ReactNode }) {
 	);
 }
 
+export function PlayerOptionsMenu({
+	SpotifyClient,
+	curInfo,
+	hideState: { hideTheThing, sethideTheThing },
+	modalState: { modalHistory, setAddToModal },
+	isPaused,
+}: {
+	SpotifyClient?: Spotify;
+	curInfo?: SongState;
+	hideState: { hideTheThing: boolean; sethideTheThing: Dispatch<SetStateAction<boolean>> };
+	modalState: { modalHistory: { current: any[] }; setAddToModal: (v: any) => any };
+	isPaused: boolean;
+}) {
+	const buttons: {
+		icon: React.JSX.Element;
+		label: string;
+		action: MouseEventHandler<HTMLButtonElement>;
+	}[] = [
+		{
+			icon: <Repeat />,
+			label: "Reload page",
+			action: (e) => {
+				if ((e.target as HTMLDivElement).id == "the-outside-of-the-div-thingy-fien")
+					sethideTheThing(true);
+			},
+		},
+		{
+			icon: <PlayIcon />,
+			label: "Sync timestamp",
+			action: () => {
+				if (!SpotifyClient) return;
+				SpotifyClient.playback(isPaused ? "play" : "pause").then(() =>
+					SpotifyClient.playback(!isPaused ? "play" : "pause")
+				);
+			},
+		},
+		{
+			icon: <AddToPlaylist />,
+			label: "Add to other playlist",
+			action: () => {
+				const songUri = curInfo?.uris.song;
+				if (!songUri || !SpotifyClient) return;
+				SpotifyClient.getEditablePlaylists([songUri]).then((data) => {
+					const playlists = data as any;
+					(modalHistory.current as any[]).push(playlists.data.me.editablePlaylists);
+					setAddToModal(playlists.data.me.editablePlaylists);
+				});
+			},
+		},
+	];
+	const [hide, setHide] = useState(false);
+	const [slide, setSlide] = useState(false);
+	useEffect(() => {
+		if (!hideTheThing) {
+			setHide(false);
+			setTimeout(() => {
+				setSlide(false);
+			}, 100);
+		} else {
+			setSlide(true);
+			setTimeout(() => {
+				setHide(true);
+			}, 100);
+		}
+	}, [hideTheThing]);
+
+	const backdropOpacity = slide ? "opacity-0" : "opacity-1";
+	const touchDivSlide = slide ? "top-full" : "top-0";
+	const hiddenState = hide ? "hidden" : "";
+
+	return (
+		<div
+			className={`fixed w-full h-full top-0 z-20 bg-black bg-opacity-60 transition-all ${backdropOpacity} ${hiddenState}`}>
+			<div
+				className={`fixed w-full h-full transition-all ${touchDivSlide}`}
+				id="the-outside-of-the-div-thingy-fien"
+				onClick={(e) => {
+					if ((e.target as HTMLDivElement).id == "the-outside-of-the-div-thingy-fien")
+						sethideTheThing(true);
+				}}>
+				<div className={`absolute w-full bg-[#222] rounded-t-2xl bottom-0`}>
+					<div className="flex p-4 border-b-2 border-b-neutral-700">
+						<Image
+							className="size-10 mr-2 aspect-square bg-[#282828] border-none block"
+							alt="alb-img"
+							width={64}
+							height={64}
+							priority={false}
+							unoptimized={true}
+							src={curInfo?.image || blank}
+						/>
+						<div className="flex flex-col">
+							<span className="text-sm w-full font-bold ">{curInfo?.title}</span>
+							<span className="w-full overflow-hidden text-xs">
+								{curInfo?.artist}
+							</span>
+						</div>
+					</div>
+					<ul className="py-2 px-3 *:py-3">
+						{buttons.map((button) => (
+							<li key={button.label}>
+								<button
+									className="flex w-full h-full"
+									onClick={(e) => {
+										sethideTheThing(true);
+										button.action(e);
+									}}>
+									<span className="size-6 fill-white mr-2 opacity-55">
+										{button.icon}
+									</span>
+									<span>{button.label}</span>
+								</button>
+							</li>
+						))}
+					</ul>
+				</div>
+			</div>
+		</div>
+	);
+}
+
 function Toast({ toast, setToast }: { toast: string; setToast: any }) {
 	if (toast) {
 		setTimeout(() => setToast(undefined), 1000);
@@ -475,6 +618,15 @@ function Track({
 	const setElapsedTo = useRef<number>();
 	return (
 		<div
+			onClick={(event) => {
+				console.log(event);
+				setElapsedTo.current = undefined;
+				const element = event.target as HTMLDivElement;
+				const roundGrad = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
+				const val = roundGrad((event.clientX - element.offsetLeft) / element.offsetWidth);
+
+				SpotifyClient?.SeekTo(Math.floor(val * curDurationMs));
+			}}
 			onTouchEnd={(event) => {
 				setElapsedTo.current = undefined;
 				const element = event.target as HTMLDivElement;
@@ -498,7 +650,7 @@ function Track({
 				id="track"
 				className="flex w-full h-1 bg-lightly rounded-full">
 				<div
-					className="bg-[var(--dark-color)] w-[var(--width)] h-full rounded-full"
+					className="bg-[var(--light-color)] w-[var(--width)] h-full rounded-full"
 					style={
 						{
 							"--width": `${
@@ -561,17 +713,25 @@ function Backdrop({
 	);
 }
 
-function Context({ curInfo, setPlayerHidden }: { curInfo?: SongStateExtra; setPlayerHidden: any }) {
+function Context({
+	curInfo,
+	setPlayerHidden,
+	setPlayerOptionsHidden,
+}: {
+	curInfo?: SongStateExtra;
+	setPlayerHidden: any;
+	setPlayerOptionsHidden: any;
+}) {
 	return (
 		<div className=" z-[1] playback flex justify-between items-center py-3">
 			<button onClick={() => setPlayerHidden(true)}>
 				<DownArrow />
 			</button>
 			<div className="text-xs text-center w-full">
-				<p>{curInfo?.context?.header}</p>
+				<p className="text-[#ffffffaa]">{curInfo?.context?.header}</p>
 				<p>{curInfo?.context?.name || "-"}</p>
 			</div>
-			<button onClick={() => (window.location.href = window.location.href)}>
+			<button onClick={() => setPlayerOptionsHidden(false)}>
 				<MoreOptions />
 			</button>
 		</div>

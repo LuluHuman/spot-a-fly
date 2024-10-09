@@ -157,7 +157,7 @@ function parseLines(
 					: undefined
 			}
 			ref={(ref) => {
-				if (msStart - curMs < 200 && msStart - curMs > 0) {
+				if (!isBackground && msStart - curMs < 200 && msStart - curMs > 0) {
 					ref?.scrollIntoView({
 						block: "center",
 						behavior: "smooth",

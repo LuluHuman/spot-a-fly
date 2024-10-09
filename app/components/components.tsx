@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useRef, useState } from "react";
 import { Explicit } from "./icons";
 
 export function Timestamp({ ms }: { ms: number }) {
@@ -117,7 +117,9 @@ export function SlideThenHide({
 		<div
 			className={
 				className +
-				` transition-all ${slide ? "top-full" : "top-0"} ${hide ? "hidden" : ""}`
+				` transition-all ${slide ? "top-full opacity-0" : "top-0 opacity-1"} ${
+					hide ? "hidden" : ""
+				}`
 			}>
 			{children}
 		</div>
