@@ -6,6 +6,7 @@ import { SongCard } from "../components";
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 const roundGrad = (p: number) => (p > 100 ? 100 : p < 0 ? 0 : Number.isNaN(p) ? 100 : p);
+const roundDec = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
 
 export default function LyricView({
 	lyrics: lyrcs,
@@ -78,13 +79,14 @@ function parseLines(
 	showing: "Line" | "Syllable" | "Static" | "queue" | undefined,
 	SpotifyClient?: Spotify
 ) {
+	const actveStart = curMs - msStart;
+	const activeEnd = msEnd - msStart;
 	var element: React.JSX.Element | React.JSX.Element[] = rawElement;
 
 	const inRange = curMs >= msStart && !(curMs >= msEnd);
 	const lineType = isInstrumental
 		? "instrumental "
 		: "gradient-color lyrLine text-xl m-1 transition blur-[1px] w-full ";
-
 	const lineAignment = isOppositeAligned ? "text-right " : "text-left ";
 
 	var lineActive = "";
@@ -102,6 +104,7 @@ function parseLines(
 			const p = (startOffset / endOffset) * 100;
 			const css = {
 				"--gradient-progress": `${roundGrad(p)}%`,
+				"--glow": curMs >= msEnd ? 0 : Math.sin(Math.PI * (startOffset / endOffset)) - 0.5,
 			};
 			return (
 				<span
@@ -115,8 +118,6 @@ function parseLines(
 	}
 	if (inRange) Active();
 	function Active() {
-		const actveStart = curMs - msStart;
-		const activeEnd = msEnd - msStart;
 		if (isInstrumental) {
 			const timeLeft = msEnd - curMs;
 
@@ -146,6 +147,7 @@ function parseLines(
 			return;
 		}
 	}
+
 	return (
 		<button
 			className={`${lineType + lineAignment + lineActive}`}
@@ -153,6 +155,7 @@ function parseLines(
 				gradientProgress > 0
 					? ({
 							"--gradient-progress": `${gradientProgress}%`,
+							"--glow": SinGlow(actveStart / activeEnd),
 					  } as React.CSSProperties)
 					: undefined
 			}
@@ -169,4 +172,8 @@ function parseLines(
 			{element}
 		</button>
 	);
+}
+function SinGlow(x: number) {
+	const wave = Math.sin((Math.PI * x - 1.5) / 0.5);
+	return wave > 0 ? wave : 0;
 }

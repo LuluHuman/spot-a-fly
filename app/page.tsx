@@ -55,7 +55,9 @@ export default function Home() {
 							case "PseudoPlaylist":
 								return item.image?.sources[1].url;
 							case "Playlist":
-								return item.images?.items[0].sources[0].url;
+								return item.images.items[0]
+									? item.images?.items[0].sources[0].url
+									: undefined;
 							case "Artist":
 								return item.visuals?.avatarImage.sources[0].url;
 							case "Folder":

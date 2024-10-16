@@ -17,10 +17,16 @@ export async function GET() {
 export async function POST(req: Request) {
     const data = await req.json()
     const cookieStore = cookies()
-    const sp_dc = cookieStore.set({
-        name: "sp_dc", value: data.session, httpOnly: true
-    })
-    console.log(sp_dc);
+    const sp_dc =
+        cookieStore.set({
+            name: "sp_dc",
+            value: data.session,
+            httpOnly: true,
+            secure: true,
+            path: '/',
+            sameSite: 'lax',
+            maxAge: 60 * 60 * 24 * 30,
+        });
 
     const tokenURL = "https://open.spotify.com/get_access_token";
     try {

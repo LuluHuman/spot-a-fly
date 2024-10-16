@@ -200,8 +200,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 				currentInveral.current = inveral;
 			}
 			if (player_state.is_paused || !state.active_device_id) return clearInterval(inveral);
-			const ms = performance.timeOrigin + performance.now() - startTimestamp;
-			setCurProgressMs(ms);
+			setCurProgressMs(performance.timeOrigin + performance.now() - startTimestamp);
 		}, _msStep);
 
 		if (lastTrackUri.current == trackUri) {
@@ -353,7 +352,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 							<ButtonWithFetchState
 								disabled={!curInfo.deviceId}
 								setErrToast={setMessage}
-								className="size-10 mx-3 *:fill-white h-full"
+								className="size-16 mx-3 *:fill-white h-min"
 								clickAction={() =>
 									SpotifyClient?.playback(!isPaused ? "pause" : "play")
 								}>
@@ -367,7 +366,9 @@ export default function Player({ children }: { children: React.ReactNode }) {
 								style={
 									{
 										"--width": `${
-											(curProgressMs / curDurationMs.current) * 100
+											Math.ceil(
+												(curProgressMs / curDurationMs.current) * 1000
+											) / 10
 										}%`,
 									} as React.CSSProperties
 								}
@@ -495,6 +496,7 @@ export function PlayerOptionsMenu({
 			icon: <Repeat />,
 			label: "Reload page",
 			action: (e) => {
+				document.location.href = document.location.href;
 				if ((e.target as HTMLDivElement).id == "the-outside-of-the-div-thingy-fien")
 					sethideTheThing(true);
 			},
@@ -654,7 +656,8 @@ function Track({
 					style={
 						{
 							"--width": `${
-								setElapsedTo.current || (curProgressMs / curDurationMs) * 100
+								setElapsedTo.current ||
+								Math.ceil((curProgressMs / curDurationMs) * 1000) / 10
 							}%`,
 						} as React.CSSProperties
 					}
@@ -676,7 +679,7 @@ function Backdrop({
 	curInfo?: SongState;
 	curInfoExtra: SongStateExtra;
 }) {
-	return curInfoExtra?.canvasUrl || curInfoExtra?.canvasUrl?.endsWith("jpg") ? (
+	return curInfoExtra?.canvasUrl && !curInfoExtra?.canvasUrl?.endsWith("jpg") ? (
 		<div className="absolute -z-[1] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
 			<video
 				src={curInfoExtra?.canvasUrl}
