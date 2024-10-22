@@ -84,9 +84,16 @@ function parseLines(
 	var element: React.JSX.Element | React.JSX.Element[] = rawElement;
 
 	const inRange = curMs >= msStart && !(curMs >= msEnd);
+	// if (!inRange) {
+	const lineHasentPlayed = curMs < msStart;
+	const howManyMsBeforePlay = msStart - curMs;
+	const howManyMsAfterPlay = curMs - msEnd;
+	const distanceMs = lineHasentPlayed ? howManyMsBeforePlay : howManyMsAfterPlay;
+	const blur =
+		Math.ceil((lineHasentPlayed ? distanceMs / msStart : distanceMs / msEnd) * 40) / 10;
 	const lineType = isInstrumental
 		? "instrumental "
-		: "gradient-color lyrLine text-xl m-1 transition blur-[1px] w-full ";
+		: `gradient-color lyrLine text-xl m-1 w-full `;
 	const lineAignment = isOppositeAligned ? "text-right " : "text-left ";
 
 	var lineActive = "";
@@ -150,14 +157,13 @@ function parseLines(
 
 	return (
 		<button
-			className={`${lineType + lineAignment + lineActive}`}
+			className={`${lineType + lineAignment + lineActive} transition-all`}
 			style={
-				gradientProgress > 0
-					? ({
-							"--gradient-progress": `${gradientProgress}%`,
-							"--glow": SinGlow(actveStart / activeEnd),
-					  } as React.CSSProperties)
-					: undefined
+				{
+					"--gradient-progress": gradientProgress > 0 ? `${gradientProgress}%` : "",
+					"--glow": gradientProgress > 0 ? SinGlow(actveStart / activeEnd) : "",
+					filter: `blur(${blur > 2 ? 2 : blur}px)`,
+				} as React.CSSProperties
 			}
 			ref={(ref) => {
 				if (!isBackground && msStart - curMs < 200 && msStart - curMs > 0) {

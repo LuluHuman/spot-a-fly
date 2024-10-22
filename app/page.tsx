@@ -36,8 +36,8 @@ export default function Home() {
 				<Image
 					className="size-6 rounded-full aspect-square bg-[#282828] border-none inline-block mx-2"
 					alt="coverArt"
-					width={0}
-					height={0}
+					width={80}
+					height={80}
 					priority={false}
 					unoptimized={true}
 					src={(user?.images ? user?.images[0].url : undefined) || blank}
@@ -73,8 +73,8 @@ export default function Home() {
 							<Image
 								className="size-20 m-2 rounded-md aspect-square bg-[#282828] border-none block"
 								alt="coverArt"
-								width={0}
-								height={0}
+								width={80}
+								height={80}
 								priority={false}
 								unoptimized={true}
 								src={image || blank}

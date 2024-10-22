@@ -52,8 +52,16 @@ export async function collectStateExtra(
                 continue
             }
 
+            const uriData = (() => {
+                const uriSplit = nextTrack.uri.split(":")
+                //spotify:[type]:[artist]:[original_title]:[title]
+                if (uriSplit[1] !== "local") return { title: "", artist: "" }
+                return {
+                    title: decodeURIComponent(uriSplit[4]).replaceAll("+", " "),
+                    artist: nextTrack.metadata.artist_uri ? decodeURIComponent(URIto.id(nextTrack.metadata.artist_uri)).replaceAll("+", " ") : decodeURIComponent(uriSplit[2]).replaceAll("+", " "),
+                }
+            })()
 
-            const artistFromURI = nextTrack.metadata.artist_uri ? decodeURIComponent(URIto.id(nextTrack.metadata.artist_uri)).replaceAll("+", " ") : null
             queueArr.push({
                 __typename: "Track",
                 provider: nextTrack.provider,
@@ -69,13 +77,13 @@ export async function collectStateExtra(
                 artists: {
                     items: [
                         {
-                            profile: { name: artistFromURI },
+                            profile: { name: uriData.artist || null },
                             uri: "",
                         },
                     ],
                 },
                 contentRating: { label: "NONE" },
-                name: nextTrack.metadata.title,
+                name: nextTrack.metadata.title || uriData.title,
                 uri: uri,
                 uid: nextTrack.uid
             } as NextTrack);
@@ -132,17 +140,17 @@ export async function collectState(
     const player_state = (state?.player_state || state) as PlayerState;
 
     async function getTrackMetadata() {
-        if (LastState.trackUri == player_state.track.uri) return
-        if (player_state.track.uri.includes("local")) return { album: undefined, original_title: undefined, explicit: undefined, artist: undefined }
+        if (player_state.track.uri.includes("local")) return { album: undefined, name: undefined, original_title: undefined, explicit: undefined, artist: undefined }
         return (await SpotifyClient.getTrackMetadata(trackId)) as {
             album: any;
+            name: string;
             original_title?: string;
             artist: { name: string }[];
             explicit: boolean;
         };
     }
 
-    const trackMetadata = player_state.track.uri == LastState.trackUri ? undefined : await getTrackMetadata()
+    const trackMetadata = await getTrackMetadata()
 
     const getArtist = () => {
         if (!trackMetadata) return LastUpdate.artist
@@ -154,7 +162,8 @@ export async function collectState(
         return artistFromPlayer_State || artistFromMetadata || artistFromURI || player_state.track.metadata.artist_uri
     }
 
-    const title = trackMetadata?.original_title || player_state.track.metadata.title
+    const title = trackMetadata?.name || player_state.track.metadata.title
+    const original_title = trackMetadata?.original_title
 
     const getSongImage = () => {
         if (!trackMetadata) return LastUpdate.image
@@ -177,6 +186,7 @@ export async function collectState(
         deviceText: device ? device.audio_output_device_info?.device_name || device.name : "",
         devices: state.devices,
         title,
+        original_title,
         artist: getArtist(),
         image: getSongImage(),
         duration: parseInt(player_state.duration),

@@ -127,6 +127,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 		mxmClient.current = new Musixmatch();
 
 		setMessage("Connecting to Webhook...");
+
 		SpotifyClient.addReadyListener(() => {
 			if (!SpotifyClient.session.accessToken)
 				return setMessage("Error: No Spotify Access Token");
@@ -238,7 +239,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 				{ cache, SpotifyClient, mxmClient: mxmClient?.current },
 				{
 					uri: changedState.uris.song,
-					title: changedState.title,
+					title: changedState.original_title || changedState.title,
 					artist: changedState.artist,
 				}
 			).then(({ source, type, data, copyright }) => {
@@ -320,7 +321,9 @@ export default function Player({ children }: { children: React.ReactNode }) {
 								style={{ width: "inherit" }}
 								onClick={() => setPlayerHidden(false)}>
 								<OverflowText className="text-xs w-full font-bold text-nowrap">
-									{curInfo.title + " • " + curInfo.artist}
+									{(curInfo.original_title || curInfo.title) +
+										" • " +
+										curInfo.artist}
 								</OverflowText>
 								<span className="text-sm text-primarySpotify *:fill-primarySpotify flex items-center">
 									<Devices />
@@ -767,7 +770,9 @@ function SongInfo({
 			)}
 			<div className="w-full h-12 content-center overflow-hidden">
 				<div className="text-base w-full font-bold text-nowrap">
-					<a href={curInfo?.uris.album}>{err || curInfo?.title}</a>
+					<a href={curInfo?.uris.album}>
+						{err || curInfo?.original_title || curInfo?.title}
+					</a>
 				</div>
 
 				<div className="grid grid-flow-col gap-1 w-fit items-center">

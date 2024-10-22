@@ -24,7 +24,7 @@ export default function QueueView({
 		</div>,
 		<SongCard
 			albImg={curInfo.image}
-			title={curInfo.title}
+			title={curInfo.original_title || curInfo?.title}
 			artist={curInfo.artist}
 			isExplicit={curInfo.isExplicit}
 			key={"np"}
