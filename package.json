@@ -11,12 +11,15 @@
   "dependencies": {
     "axios": "^1.7.7",
     "axios-cookiejar-support": "^5.0.2",
+    "extract-colors": "^4.1.0",
+    "get-pixels": "^3.3.3",
     "next": "14.2.7",
     "react": "^18",
     "react-dom": "^18",
     "tough-cookie": "^5.0.0"
   },
   "devDependencies": {
+    "@types/get-pixels": "^3.3.4",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
