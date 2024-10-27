@@ -45,6 +45,7 @@ import {
 import { findLyrics } from "./lib/lyricFinder";
 import { collectState, collectStateExtra } from "./lib/collectState";
 import { useSearchParams } from "next/navigation";
+import { Backdrop } from "./components/Backdrop";
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 const blankState = {
@@ -671,50 +672,6 @@ function Track({
 				<Timestamp ms={curProgressMs} />
 				<Timestamp ms={curDurationMs} />
 			</div>
-		</div>
-	);
-}
-
-function Backdrop({
-	curInfo,
-	curInfoExtra,
-}: {
-	curInfo?: SongState;
-	curInfoExtra: SongStateExtra;
-}) {
-	return curInfoExtra?.canvasUrl && !curInfoExtra?.canvasUrl?.endsWith("jpg") ? (
-		<div className="absolute -z-[1] h-full top-0 flex justify-center w-full overflow-hidden bg-black">
-			<video
-				src={curInfoExtra?.canvasUrl}
-				loop
-				autoPlay
-				className="blur-md h-full saturate-200 brightness-50 max-w-none"
-			/>
-		</div>
-	) : (
-		<div
-			className="-z-[1] size-full max-h-[55%] max-w-[35%] fixed saturate-200 brightness-[0.65] overflow-hidden scale-x-[290%] scale-y-[185%] origin-top-left pointer-events-none"
-			style={{
-				background: "linear-gradient(var(--light-color), var(--dark-color), black)",
-			}}>
-			{curInfo && curInfo.image ? (
-				["Front", "Back", "BackCenter"].map((classes) => (
-					<Image
-						alt="bg"
-						key={classes}
-						className={
-							classes + " blur-2xl max-w-none w-[200%] h-auto rounded-full absolute"
-						}
-						width={0}
-						height={0}
-						priority={true}
-						unoptimized={true}
-						src={curInfo.image}
-					/>
-				))
-			) : (
-				<></>
-			)}
 		</div>
 	);
 }
