@@ -3,6 +3,7 @@ import { Lyrics, NextTrack, SongState, SongStateExtra } from "../../lib/types";
 import LyricView from "./Lyric";
 import Image from "next/image";
 import QueueView from "./Queue";
+import { LyricsIcon } from "../icons";
 
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
@@ -71,7 +72,12 @@ export default function View({
 						<div className="extra absolute w-full p-3">{lyricsView}</div>
 					</div>
 				) : (
-					defaultView
+					<div className="text-2xl font-bold clip-path h-full flex justify-center items-center">
+						<div className="fill-white border-white border-2 rounded-full size-8 m-2 flex justify-center items-center">
+							<LyricsIcon />
+						</div>
+						<span>No lyrics found</span>
+					</div>
 				)
 			) : (
 				<></>
