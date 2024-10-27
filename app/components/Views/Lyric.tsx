@@ -29,6 +29,21 @@ export default function LyricView({
 		Colors.current = x.data?.extractedColors[0];
 	});
 
+	const widths = ["w-28", "w-52", "w-full"];
+	if (!lyrcs[0])
+		return (
+			<div className="flex flex-col *:my-2 *:bg-neutral-400 *:rounded-3xl *:text-transparent *:opacity-50">
+				{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((i) => {
+					return (
+						<span
+							key={i}
+							className={widths[i % 3]}>
+							.
+						</span>
+					);
+				})}
+			</div>
+		);
 	return (
 		<>
 			{lyrcs.map((x) =>

@@ -114,7 +114,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 	const [curProgressMs, setCurProgressMs] = useState<number>(0);
 	const curDurationMs = useRef<number>(0);
 	const [isPaused, setPaused] = useState<boolean>(true);
-	const currentInveral = useRef<NodeJS.Timeout>();
+	const currentInveral = useRef<number>();
 
 	if (v !== lastV.current) {
 		lastV.current = v;
@@ -195,15 +195,15 @@ export default function Player({ children }: { children: React.ReactNode }) {
 
 		setCurProgressMs(ms);
 
-		const _msStep = 100;
-		const inveral = setInterval(() => {
-			if (currentInveral.current !== inveral) {
-				clearInterval(currentInveral.current);
-				currentInveral.current = inveral;
+		currentInveral.current = requestAnimationFrame(frame);
+		function frame() {
+			if (player_state.is_paused || !state?.active_device_id) {
+				if (currentInveral.current) cancelAnimationFrame(currentInveral.current);
+				return;
 			}
-			if (player_state.is_paused || !state.active_device_id) return clearInterval(inveral);
 			setCurProgressMs(performance.timeOrigin + performance.now() - startTimestamp);
-		}, _msStep);
+			currentInveral.current = requestAnimationFrame(frame);
+		}
 
 		if (lastTrackUri.current == trackUri) {
 			collectState(trackId, SpotifyClient, state).then((changedState) => {
@@ -271,7 +271,9 @@ export default function Player({ children }: { children: React.ReactNode }) {
 				}
 			);
 		});
-		return () => clearInterval(currentInveral.current);
+		return () => {
+			if (currentInveral.current) cancelAnimationFrame(currentInveral.current);
+		};
 	}, [SpotifyClient, state]);
 
 	const buttonClick = (viewId: number) => {
