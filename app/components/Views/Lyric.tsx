@@ -6,7 +6,7 @@ import { SongCard } from "../components";
 const blank =
 	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABHNCSVQICAgIfAhkiAAAAAtJREFUCJljYAACAAAFAAFiVTKIAAAAAElFTkSuQmCC";
 const roundGrad = (p: number) => (p > 100 ? 100 : p < 0 ? 0 : Number.isNaN(p) ? 100 : p);
-const roundDec = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
+// const roundDec = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
 
 export default function LyricView({
 	lyrics: lyrcs,
@@ -83,14 +83,14 @@ function parseLines(
 	const activeEnd = msEnd - msStart;
 	var element: React.JSX.Element | React.JSX.Element[] = rawElement;
 
+	/*
+	 const lineHasentPlayed = curMs < msStart;
+	 const howManyMsBeforePlay = msStart - curMs;
+	 const howManyMsAfterPlay = curMs - msEnd;
+	 const distanceMs = lineHasentPlayed ? howManyMsBeforePlay : howManyMsAfterPlay;
+	 const blur = Math.ceil((lineHasentPlayed ? distanceMs / msStart : distanceMs / msEnd) * 40) / 10;
+	*/
 	const inRange = curMs >= msStart && !(curMs >= msEnd);
-	// if (!inRange) {
-	const lineHasentPlayed = curMs < msStart;
-	const howManyMsBeforePlay = msStart - curMs;
-	const howManyMsAfterPlay = curMs - msEnd;
-	const distanceMs = lineHasentPlayed ? howManyMsBeforePlay : howManyMsAfterPlay;
-	const blur =
-		Math.ceil((lineHasentPlayed ? distanceMs / msStart : distanceMs / msEnd) * 40) / 10;
 	const lineType = isInstrumental
 		? "instrumental "
 		: `gradient-color lyrLine text-xl m-1 w-full `;
@@ -157,12 +157,11 @@ function parseLines(
 
 	return (
 		<button
-			className={`${lineType + lineAignment + lineActive} transition-all`}
+			className={`${lineType + lineAignment + lineActive} transition-all blur-[1px]`}
 			style={
 				{
 					"--gradient-progress": gradientProgress > 0 ? `${gradientProgress}%` : "",
 					"--glow": gradientProgress > 0 ? SinGlow(actveStart / activeEnd) : "",
-					filter: `blur(${blur > 2 ? 2 : blur}px)`,
 				} as React.CSSProperties
 			}
 			ref={(ref) => {
