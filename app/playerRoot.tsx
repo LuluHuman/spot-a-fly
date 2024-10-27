@@ -195,7 +195,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 
 		setCurProgressMs(ms);
 
-		const _msStep = 50;
+		const _msStep = 100;
 		const inveral = setInterval(() => {
 			if (currentInveral.current !== inveral) {
 				clearInterval(currentInveral.current);
@@ -304,82 +304,86 @@ export default function Player({ children }: { children: React.ReactNode }) {
 				setDevicesOverlay={setDevicesOverlay}
 			/>
 			<SpotifyContext.Provider value={{ SpotifyClient, setSpotifyClient }}>
-				{children}
-				<div className="fixed bottom-0 w-full p-2">
-					<div className="flex flex-col bg-[var(--dark-color)] rounded-md text-left w-full h-13 overflow-hidden cursor-pointer">
-						<div className="flex items-center p-2 pb-1 w-full">
-							<Image
-								className="size-10 mr-2 rounded-md aspect-square bg-[#282828] border-none block"
-								alt="alb-img"
-								width={64}
-								height={64}
-								priority={false}
-								unoptimized={true}
-								src={curInfo?.image || blank}
-							/>
-							<div
-								className="flex flex-col overflow-hidden"
-								style={{ width: "inherit" }}
-								onClick={() => setPlayerHidden(false)}>
-								<OverflowText className="text-xs w-full font-bold text-nowrap">
-									{(curInfo.original_title || curInfo.title) +
-										" • " +
-										curInfo.artist}
-								</OverflowText>
-								<span className="text-sm text-primarySpotify *:fill-primarySpotify flex items-center">
-									<Devices />
-									{curInfo?.deviceText}
-								</span>
+				{hidePlayer ? children : <></>}
+				{hidePlayer ? (
+					<div className="fixed bottom-0 w-full p-2">
+						<div className="flex flex-col bg-[var(--dark-color)] rounded-md text-left w-full h-13 overflow-hidden cursor-pointer">
+							<div className="flex items-center p-2 pb-1 w-full">
+								<Image
+									className="size-10 mr-2 rounded-md aspect-square bg-[#282828] border-none block"
+									alt="alb-img"
+									width={64}
+									height={64}
+									priority={false}
+									unoptimized={true}
+									src={curInfo?.image || blank}
+								/>
+								<div
+									className="flex flex-col overflow-hidden"
+									style={{ width: "inherit" }}
+									onClick={() => setPlayerHidden(false)}>
+									<OverflowText className="text-xs w-full font-bold text-nowrap">
+										{(curInfo.original_title || curInfo.title) +
+											" • " +
+											curInfo.artist}
+									</OverflowText>
+									<span className="text-sm text-primarySpotify *:fill-primarySpotify flex items-center">
+										<Devices />
+										{curInfo?.deviceText}
+									</span>
+								</div>
+								<button
+									className="mx-3 flex items-center *:fill-primarySpotify"
+									onClick={() => setDevicesOverlay(true)}>
+									<DeviceIcon
+										className="h-full size-6"
+										deviceType={
+											curInfo?.deviceId && curInfo?.devices
+												? curInfo?.devices[curInfo.deviceId].device_type
+												: ""
+										}
+									/>
+								</button>
+
+								<AddToButton
+									className="fill-white mx-3"
+									SpotifyClient={SpotifyClient}
+									curInfo={curInfo}
+									curInfoExtra={curInfoExtra}
+									setAddToModal={setAddToModal}
+									modalHistory={modalHistory}
+								/>
+
+								<ButtonWithFetchState
+									disabled={!curInfo.deviceId}
+									setErrToast={setMessage}
+									className="size-16 mx-3 *:fill-white h-min"
+									clickAction={() =>
+										SpotifyClient?.playback(!isPaused ? "pause" : "play")
+									}>
+									{isPaused ? <PauseIcon /> : <PlayIcon />}
+								</ButtonWithFetchState>
 							</div>
-							<button
-								className="mx-3 flex items-center *:fill-primarySpotify"
-								onClick={() => setDevicesOverlay(true)}>
-								<DeviceIcon
-									className="h-full size-6"
-									deviceType={
-										curInfo?.deviceId && curInfo?.devices
-											? curInfo?.devices[curInfo.deviceId].device_type
-											: ""
+
+							<div className="flex w-full h-1 bg-lightly">
+								<div
+									className="bg-[white] w-[var(--width)] h-full"
+									style={
+										{
+											"--width": `${
+												Math.ceil(
+													(curProgressMs / curDurationMs.current) * 1000
+												) / 10
+											}%`,
+										} as React.CSSProperties
 									}
 								/>
-							</button>
-
-							<AddToButton
-								className="fill-white mx-3"
-								SpotifyClient={SpotifyClient}
-								curInfo={curInfo}
-								curInfoExtra={curInfoExtra}
-								setAddToModal={setAddToModal}
-								modalHistory={modalHistory}
-							/>
-
-							<ButtonWithFetchState
-								disabled={!curInfo.deviceId}
-								setErrToast={setMessage}
-								className="size-16 mx-3 *:fill-white h-min"
-								clickAction={() =>
-									SpotifyClient?.playback(!isPaused ? "pause" : "play")
-								}>
-								{isPaused ? <PauseIcon /> : <PlayIcon />}
-							</ButtonWithFetchState>
-						</div>
-
-						<div className="flex w-full h-1 bg-lightly">
-							<div
-								className="bg-[white] w-[var(--width)] h-full"
-								style={
-									{
-										"--width": `${
-											Math.ceil(
-												(curProgressMs / curDurationMs.current) * 1000
-											) / 10
-										}%`,
-									} as React.CSSProperties
-								}
-							/>
+							</div>
 						</div>
 					</div>
-				</div>
+				) : (
+					<></>
+				)}
 			</SpotifyContext.Provider>
 			<PlayerOptionsMenu
 				SpotifyClient={SpotifyClient}
