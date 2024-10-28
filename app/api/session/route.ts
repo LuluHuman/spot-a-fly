@@ -4,7 +4,6 @@ import { cookies } from 'next/headers'
 export async function GET() {
     const cookieStore = cookies()
     const sp_dc = cookieStore.get("sp_dc")
-    console.log(sp_dc);
 
     const tokenURL = "https://open.spotify.com/get_access_token";
     try {

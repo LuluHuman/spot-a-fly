@@ -193,25 +193,23 @@ export default function Player({ children }: { children: React.ReactNode }) {
 		const ms = parseInt(player_state.position_as_of_timestamp);
 		const startTimestamp = timestamp - ms + (latency > 1000 ? 0 : latency);
 
-		setCurProgressMs(ms);
-
-		currentInveral.current = requestAnimationFrame(frame);
-		function frame() {
-			if (player_state.is_paused || !state?.active_device_id) {
-				if (currentInveral.current) cancelAnimationFrame(currentInveral.current);
-				return;
-			}
+		const id = Math.floor(Math.random() * 10000);
+		currentInveral.current = id;
+		requestAnimationFrame(() => frame(id));
+		function frame(id: number) {
 			setCurProgressMs(performance.timeOrigin + performance.now() - startTimestamp);
-			currentInveral.current = requestAnimationFrame(frame);
+			if (player_state.is_paused || !state?.active_device_id || currentInveral.current != id)
+				return;
+			requestAnimationFrame(() => frame(id));
 		}
 
 		if (lastTrackUri.current == trackUri) {
 			collectState(trackId, SpotifyClient, state).then((changedState) => {
-				console.info("Changed info: ", changedState);
+				// console.info("Changed info: ", changedState);
 				setInfo(changedState);
 			});
 			collectStateExtra(SpotifyClient, state).then((changedState) => {
-				console.info("Changed info(Promises): ", changedState);
+				// console.info("Changed info(Promises): ", changedState);
 				setInfoExtra(changedState);
 			});
 			return;
@@ -232,7 +230,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 			}
 		);
 		collectState(trackId, SpotifyClient, state).then((changedState: SongState) => {
-			console.info("Info(No promises): ", changedState);
+			// console.info("Info(No promises): ", changedState);
 			document.title = `${changedState?.title} • ${changedState.artist}`;
 
 			setInfo(changedState);
@@ -257,7 +255,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 			});
 		});
 		collectStateExtra(SpotifyClient, state).then((changedState: SongStateExtra) => {
-			console.info("Info(Promises): ", changedState);
+			// console.info("Info(Promises): ", changedState);
 			setInfoExtra(changedState);
 
 			if (!changedState?.queue[0]) return;
@@ -631,7 +629,6 @@ function Track({
 	return (
 		<div
 			onClick={(event) => {
-				console.log(event);
 				setElapsedTo.current = undefined;
 				const element = event.target as HTMLDivElement;
 				const roundGrad = (p: number) => (p > 1 ? 1 : p < 0 ? 0 : Number.isNaN(p) ? 1 : p);
