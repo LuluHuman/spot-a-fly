@@ -1,4 +1,4 @@
-import { fetchLyrics, Musixmatch, Spotify } from "./api";
+import { fetchLyrics, Musixmatch, Spotify, URIto } from "./api";
 import { sylLine, Lyrics } from "./types";
 
 export async function findLyrics(
@@ -16,6 +16,27 @@ export async function findLyrics(
 	{ uri, title, artist }: { uri: string; title: string; artist: string }
 ) {
 	if (cache.current[uri]) return cache.current[uri];
+
+	// If those tracks are fire and do not have synced lyrics
+	// im doing it myself then
+	const local = async () => {
+		if (!uri.startsWith("spotify:track")) return undefined;
+
+		const lyr = (await fetch("/api/getLyrics/" + URIto.id(uri)).then((d) => d.json())) as any;
+		console.log(lyr, true, true);
+
+		if (!lyr || !lyr.Type || lyr.Type == "Static") return;
+
+		const lyricLines = parseLyricsBeuLyr(lyr);
+		if (!lyricLines) return;
+
+		return {
+			source: "luluhoy.tech (meself)",
+			type: lyr.Type as string,
+			data: lyricLines,
+		};
+	};
+
 	const beuLyr = async () => {
 		if (!SpotifyClient) return;
 		if (!uri.startsWith("spotify:track")) return undefined;
@@ -79,6 +100,11 @@ export async function findLyrics(
 	};
 
 	const find = async () => {
+		const localRes = await local();
+		console.log(localRes, true);
+
+		if (localRes) return localRes;
+
 		const beuLyrRes = await beuLyr();
 		if (beuLyrRes) return beuLyrRes;
 
