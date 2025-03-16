@@ -20,13 +20,13 @@ export default function Home() {
 				console.log(me, "SpotifyClient");
 				setUser(me);
 			});
-			SpotifyClient.getLibrary().then((data) => {
-				const datadata = (data as any).data;
-				if (!datadata || !datadata.me) return;
+			// SpotifyClient.getLibrary().then((data) => {
+			// 	const datadata = (data as any).data;
+			// 	if (!datadata || !datadata.me) return;
 
-				const libraryV3items = datadata.me?.libraryV3.items;
-				setLibraryItems(libraryV3items);
-			});
+			// 	const libraryV3items = datadata.me?.libraryV3.items;
+			// 	setLibraryItems(libraryV3items);
+			// });
 		});
 	}, [SpotifyClient]);
 

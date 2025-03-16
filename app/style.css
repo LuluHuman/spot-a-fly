@@ -50,12 +50,12 @@ a:hover {
 	font-size: 16px;
 	display: flex;
 	align-items: center;
-	blur: none;
+	opacity: 1;
 }
 .extra > button.lineActive {
 	font-size: 22px;
 	text-shadow: 0 0 1rem rgba(255, 255, 255, var(--glow));
-	filter: blur(0px);
+	opacity: 1;
 }
 .extra > button.lineActive.lineAnimate {
 	background-image: linear-gradient(

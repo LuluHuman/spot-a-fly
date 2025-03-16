@@ -172,11 +172,11 @@ function parseLines(
 
 	return (
 		<button
-			className={`${lineType + lineAignment + lineActive} transition-all blur-[1px]`}
+			className={`${lineType + lineAignment + lineActive} transition-all opacity-50`}
 			style={
 				{
 					"--gradient-progress": gradientProgress > 0 ? `${gradientProgress}%` : "",
-					"--glow": gradientProgress > 0 ? SinGlow(actveStart / activeEnd) : "",
+					// "--glow": gradientProgress > 0 ? SinGlow(actveStart / activeEnd) : "",
 				} as React.CSSProperties
 			}
 			ref={(ref) => {

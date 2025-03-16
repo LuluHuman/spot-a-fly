@@ -8,7 +8,6 @@ async function handler(
     { params }: { params: { url: string } }
 ) {
     try {
-
         const url = decodeURIComponent(params.url)
         const data = await req.text()
         const jar = new CookieJar();

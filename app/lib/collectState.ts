@@ -83,7 +83,7 @@ export async function collectStateExtra(
                     ],
                 },
                 contentRating: { label: "NONE" },
-                name: nextTrack.metadata.title || uriData.title,
+                name: nextTrack?.metadata.title || uriData.title,
                 uri: uri,
                 uid: nextTrack.uid
             } as NextTrack);
