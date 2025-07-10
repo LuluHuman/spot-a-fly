@@ -1,0 +1,1461 @@
+{
+    "StartTime": 0.61,
+    "EndTime": 268.03,
+    "Type": "Syllable",
+    "Content": [
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "おか",
+                        "IsPartOfWord": true,
+                        "StartTime": 0,
+                        "EndTime": 1.037
+                    },
+                    {
+                        "Text": "え",
+                        "IsPartOfWord": true,
+                        "StartTime": 1.037,
+                        "EndTime": 1.827
+                    },
+                    {
+                        "Text": "り",
+                        "IsPartOfWord": true,
+                        "StartTime": 1.827,
+                        "EndTime": 2.289
+                    },
+                    {
+                        "Text": "な",
+                        "IsPartOfWord": true,
+                        "StartTime": 2.289,
+                        "EndTime": 3.255
+                    },
+                    {
+                        "Text": "さい",
+                        "IsPartOfWord": false,
+                        "StartTime": 3.255,
+                        "EndTime": 4.503
+                    },
+                    {
+                        "Text": "あたた",
+                        "IsPartOfWord": true,
+                        "StartTime": 4.503,
+                        "EndTime": 5.028
+                    },
+                    {
+                        "Text": "かな",
+                        "IsPartOfWord": true,
+                        "StartTime": 5.028,
+                        "EndTime": 6.424
+                    },
+                    {
+                        "Text": "幸",
+                        "IsPartOfWord": true,
+                        "StartTime": 6.424,
+                        "EndTime": 7.771
+                    },
+                    {
+                        "Text": "せ",
+                        "IsPartOfWord": false,
+                        "StartTime": 7.771,
+                        "EndTime": 9.987
+                    }
+                ],
+                "StartTime": 0.61,
+                "EndTime": 9.987
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "今日も",
+                        "IsPartOfWord": true,
+                        "StartTime": 11.653,
+                        "EndTime": 12.013
+                    },
+                    {
+                        "Text": "おつかれ",
+                        "IsPartOfWord": true,
+                        "StartTime": 12.013,
+                        "EndTime": 12.554
+                    },
+                    {
+                        "Text": "さま",
+                        "IsPartOfWord": false,
+                        "StartTime": 12.554,
+                        "EndTime": 12.92
+                    },
+                    {
+                        "Text": "なのじゃ",
+                        "IsPartOfWord": false,
+                        "StartTime": 12.92,
+                        "EndTime": 13.363
+                    }
+                ],
+                "StartTime": 11.653,
+                "EndTime": 13.363
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "クタ",
+                        "IsPartOfWord": true,
+                        "StartTime": 13.657,
+                        "EndTime": 13.986
+                    },
+                    {
+                        "Text": "クタ衣",
+                        "IsPartOfWord": true,
+                        "StartTime": 13.986,
+                        "EndTime": 14.507
+                    },
+                    {
+                        "Text": "服に",
+                        "IsPartOfWord": true,
+                        "StartTime": 14.507,
+                        "EndTime": 14.861
+                    },
+                    {
+                        "Text": "やつれたお顔",
+                        "IsPartOfWord": false,
+                        "StartTime": 14.861,
+                        "EndTime": 15.954
+                    }
+                ],
+                "StartTime": 13.657,
+                "EndTime": 15.954
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "よし",
+                        "IsPartOfWord": true,
+                        "StartTime": 16.107,
+                        "EndTime": 16.431
+                    },
+                    {
+                        "Text": "よし",
+                        "IsPartOfWord": false,
+                        "StartTime": 16.431,
+                        "EndTime": 16.71
+                    },
+                    {
+                        "Text": "妾に",
+                        "IsPartOfWord": true,
+                        "StartTime": 16.71,
+                        "EndTime": 17.359
+                    },
+                    {
+                        "Text": "おま",
+                        "IsPartOfWord": true,
+                        "StartTime": 17.359,
+                        "EndTime": 17.718
+                    },
+                    {
+                        "Text": "かせじゃ",
+                        "IsPartOfWord": false,
+                        "StartTime": 17.718,
+                        "EndTime": 18.27
+                    }
+                ],
+                "StartTime": 16.107,
+                "EndTime": 18.021
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "掃除に",
+                        "IsPartOfWord": true,
+                        "StartTime": 18.021,
+                        "EndTime": 18.739
+                    },
+                    {
+                        "Text": "洗濯",
+                        "IsPartOfWord": false,
+                        "StartTime": 18.739,
+                        "EndTime": 19.251
+                    },
+                    {
+                        "Text": "あったか",
+                        "IsPartOfWord": true,
+                        "StartTime": 19.251,
+                        "EndTime": 19.825
+                    },
+                    {
+                        "Text": "ご飯",
+                        "IsPartOfWord": false,
+                        "StartTime": 19.825,
+                        "EndTime": 20.82
+                    }
+                ],
+                "StartTime": 18.021,
+                "EndTime": 20.82
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "フカ",
+                        "IsPartOfWord": true,
+                        "StartTime": 20.82,
+                        "EndTime": 20.946
+                    },
+                    {
+                        "Text": "フカの",
+                        "IsPartOfWord": true,
+                        "StartTime": 20.946,
+                        "EndTime": 21.547
+                    },
+                    {
+                        "Text": "干したて",
+                        "IsPartOfWord": true,
+                        "StartTime": 21.547,
+                        "EndTime": 22.024
+                    },
+                    {
+                        "Text": "布団",
+                        "IsPartOfWord": false,
+                        "StartTime": 22.024,
+                        "EndTime": 22.73
+                    }
+                ],
+                "StartTime": 20.82,
+                "EndTime": 22.73
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "ほーら",
+                        "IsPartOfWord": true,
+                        "StartTime": 22.73,
+                        "EndTime": 23.057
+                    },
+                    {
+                        "Text": "お好きに",
+                        "IsPartOfWord": true,
+                        "StartTime": 23.057,
+                        "EndTime": 23.677
+                    },
+                    {
+                        "Text": "してよいぞ",
+                        "IsPartOfWord": false,
+                        "StartTime": 23.677,
+                        "EndTime": 24.911
+                    }
+                ],
+                "StartTime": 22.73,
+                "EndTime": 24.911
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "スーパー",
+                        "IsPartOfWord": false,
+                        "StartTime": 24.911,
+                        "EndTime": 25.503
+                    },
+                    {
+                        "Text": "エアコン",
+                        "IsPartOfWord": false,
+                        "StartTime": 25.503,
+                        "EndTime": 26.0862
+                    },
+                    {
+                        "Text": "アニメー",
+                        "IsPartOfWord": true,
+                        "StartTime": 26.086,
+                        "EndTime": 26.749
+                    },
+                    {
+                        "Text": "ション",
+                        "IsPartOfWord": false,
+                        "StartTime": 26.749,
+                        "EndTime": 27.02
+                    }
+                ],
+                "StartTime": 24.911,
+                "EndTime": 27.02
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "分ら",
+                        "IsPartOfWord": true,
+                        "StartTime": 27.02,
+                        "EndTime": 27.422
+                    },
+                    {
+                        "Text": "ぬ言葉は",
+                        "IsPartOfWord": true,
+                        "StartTime": 27.422,
+                        "EndTime": 28.201
+                    },
+                    {
+                        "Text": "増えたけど",
+                        "IsPartOfWord": false,
+                        "StartTime": 28.201,
+                        "EndTime": 28.901
+                    }
+                ],
+                "StartTime": 27.02,
+                "EndTime": 28.901
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "そこは",
+                        "IsPartOfWord": true,
+                        "StartTime": 29.17,
+                        "EndTime": 29.781
+                    },
+                    {
+                        "Text": "おぬしに",
+                        "IsPartOfWord": true,
+                        "StartTime": 29.781,
+                        "EndTime": 30.398
+                    },
+                    {
+                        "Text": "頼ろうかの",
+                        "IsPartOfWord": true,
+                        "StartTime": 30.398,
+                        "EndTime": 31.54
+                    }
+                ],
+                "StartTime": 29.17,
+                "EndTime": 31.54
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "お礼に",
+                        "IsPartOfWord": true,
+                        "StartTime": 31.54,
+                        "EndTime": 32.106
+                    },
+                    {
+                        "Text": "背中をな",
+                        "IsPartOfWord": false,
+                        "StartTime": 32.106,
+                        "EndTime": 32.787
+                    },
+                    {
+                        "Text": "がすの",
+                        "IsPartOfWord": true,
+                        "StartTime": 32.787,
+                        "EndTime": 33.057
+                    },
+                    {
+                        "Text": "じゃ",
+                        "IsPartOfWord": false,
+                        "StartTime": 33.057,
+                        "EndTime": 33.475
+                    }
+                ],
+                "StartTime": 31.54,
+                "EndTime": 33.475
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "大",
+                        "IsPartOfWord": true,
+                        "StartTime": 33.99,
+                        "EndTime": 34.285
+                    },
+                    {
+                        "Text": "満足かと",
+                        "IsPartOfWord": true,
+                        "StartTime": 34.285,
+                        "EndTime": 35.106
+                    },
+                    {
+                        "Text": "思いきや",
+                        "IsPartOfWord": true,
+                        "StartTime": 35.106,
+                        "EndTime": 36.03
+                    }
+                ],
+                "StartTime": 33.99,
+                "EndTime": 36.03
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "なに",
+                        "IsPartOfWord": true,
+                        "StartTime": 36.03,
+                        "EndTime": 36.603
+                    },
+                    {
+                        "Text": "恥ずか",
+                        "IsPartOfWord": true,
+                        "StartTime": 36.603,
+                        "EndTime": 36.9
+                    },
+                    {
+                        "Text": "しがっておる",
+                        "IsPartOfWord": true,
+                        "StartTime": 36.9,
+                        "EndTime": 37.579
+                    },
+                    {
+                        "Text": "っておるのかの？",
+                        "IsPartOfWord": true,
+                        "StartTime": 37.579,
+                        "EndTime": 38.45
+                    }
+                ],
+                "StartTime": 36.03,
+                "EndTime": 38.45
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "素直に",
+                        "IsPartOfWord": true,
+                        "StartTime": 38.45,
+                        "EndTime": 38.9
+                    },
+                    {
+                        "Text": "甘えて",
+                        "IsPartOfWord": true,
+                        "StartTime": 38.9,
+                        "EndTime": 39.663
+                    },
+                    {
+                        "Text": "よいか",
+                        "IsPartOfWord": true,
+                        "StartTime": 39.663,
+                        "EndTime": 40.181
+                    },
+                    {
+                        "Text": "ら",
+                        "IsPartOfWord": false,
+                        "StartTime": 40.181,
+                        "EndTime": 42.51
+                    },
+                    {
+                        "Text": "膝の上で寝て",
+                        "IsPartOfWord": true,
+                        "StartTime": 42.51,
+                        "EndTime": 44.116
+                    },
+                    {
+                        "Text": "よいか",
+                        "IsPartOfWord": true,
+                        "StartTime": 44.116,
+                        "EndTime": 44.719
+                    },
+                    {
+                        "Text": "ら",
+                        "IsPartOfWord": true,
+                        "StartTime": 44.719,
+                        "EndTime": 46.525
+                    }
+                ],
+                "StartTime": 38.45,
+                "EndTime": 47.34
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "幸せ",
+                        "IsPartOfWord": true,
+                        "StartTime": 47.34,
+                        "EndTime": 48.322
+                    },
+                    {
+                        "Text": "な",
+                        "IsPartOfWord": true,
+                        "StartTime": 48.322,
+                        "EndTime": 48.677
+                    },
+                    {
+                        "Text": "顔を",
+                        "IsPartOfWord": true,
+                        "StartTime": 48.677,
+                        "EndTime": 49.565
+                    },
+                    {
+                        "Text": "しとるな",
+                        "IsPartOfWord": false,
+                        "StartTime": 49.565,
+                        "EndTime": 51.237
+                    },
+                    {
+                        "Text": "（妾も幸",
+                        "IsPartOfWord": true,
+                        "StartTime": 51.237,
+                        "EndTime": 52.209
+                    },
+                    {
+                        "Text": "せじゃ）",
+                        "IsPartOfWord": true,
+                        "StartTime": 52.209,
+                        "EndTime": 52.65
+                    }
+                ],
+                "StartTime": 47.34,
+                "EndTime": 52.65
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "もっふ",
+                        "IsPartOfWord": true,
+                        "StartTime": 52.65,
+                        "EndTime": 52.928
+                    },
+                    {
+                        "Text": "もふに",
+                        "IsPartOfWord": true,
+                        "StartTime": 52.928,
+                        "EndTime": 53.306
+                    },
+                    {
+                        "Text": "癒されて",
+                        "IsPartOfWord": true,
+                        "StartTime": 53.306,
+                        "EndTime": 54.408
+                    },
+                    {
+                        "Text": "よいの",
+                        "IsPartOfWord": true,
+                        "StartTime": 54.408,
+                        "EndTime": 55.569
+                    },
+                    {
+                        "Text": "じゃ",
+                        "IsPartOfWord": true,
+                        "StartTime": 55.569,
+                        "EndTime": 55.823
+                    },
+                    {
+                        "Text": "よ ",
+                        "IsPartOfWord": true,
+                        "StartTime": 55.823,
+                        "EndTime": 56.63
+                    }
+                ],
+                "StartTime": 52.65,
+                "EndTime": 56.63
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "特別に",
+                        "IsPartOfWord": true,
+                        "StartTime": 56.63,
+                        "EndTime": 57.883
+                    },
+                    {
+                        "Text": "好きにして",
+                        "IsPartOfWord": true,
+                        "StartTime": 57.883,
+                        "EndTime": 58.769
+                    },
+                    {
+                        "Text": "よい",
+                        "IsPartOfWord": true,
+                        "StartTime": 58.769,
+                        "EndTime": 59.851
+                    },
+                    {
+                        "Text": "からの ",
+                        "IsPartOfWord": true,
+                        "StartTime": 59.851,
+                        "EndTime": 61.46
+                    }
+                ],
+                "StartTime": 56.63,
+                "EndTime": 61.46
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "たまに",
+                        "IsPartOfWord": true,
+                        "StartTime": 61.46,
+                        "EndTime": 62.59
+                    },
+                    {
+                        "Text": "ちょっと",
+                        "IsPartOfWord": true,
+                        "StartTime": 62.59,
+                        "EndTime": 63.343
+                    },
+                    {
+                        "Text": "甘えと",
+                        "IsPartOfWord": true,
+                        "StartTime": 63.343,
+                        "EndTime": 64.38
+                    },
+                    {
+                        "Text": "る",
+                        "IsPartOfWord": true,
+                        "StartTime": 64.38,
+                        "EndTime": 65.8
+                    }
+                ],
+                "StartTime": 61.46,
+                "EndTime": 65.8
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "そんな",
+                        "IsPartOfWord": true,
+                        "StartTime": 65.8,
+                        "EndTime": 66.805
+                    },
+                    {
+                        "Text": "ところ",
+                        "IsPartOfWord": true,
+                        "StartTime": 66.805,
+                        "EndTime": 67.808
+                    },
+                    {
+                        "Text": "もよいな",
+                        "IsPartOfWord": false,
+                        "StartTime": 67.808,
+                        "EndTime": 69.063
+                    },
+                    {
+                        "Text": "（よ～し",
+                        "IsPartOfWord": true,
+                        "StartTime": 69.063,
+                        "EndTime": 69.702
+                    },
+                    {
+                        "Text": "よし）",
+                        "IsPartOfWord": true,
+                        "StartTime": 69.702,
+                        "EndTime": 70.22
+                    }
+                ],
+                "StartTime": 65.8,
+                "EndTime": 70.22
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "もっふもふに",
+                        "IsPartOfWord": true,
+                        "StartTime": 70.22,
+                        "EndTime": 71.172
+                    },
+                    {
+                        "Text": "包まれて",
+                        "IsPartOfWord": true,
+                        "StartTime": 71.172,
+                        "EndTime": 72.298
+                    },
+                    {
+                        "Text": "よいのじゃよ ",
+                        "IsPartOfWord": true,
+                        "StartTime": 72.298,
+                        "EndTime": 74.61
+                    }
+                ],
+                "StartTime": 70.22,
+                "EndTime": 74.61
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "おぬしはそう大切な宝物",
+                        "IsPartOfWord": false,
+                        "StartTime": 74.61,
+                        "EndTime": 79.7
+                    }
+                ],
+                "StartTime": 74.61,
+                "EndTime": 79.7
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "この笑顔いつまでも",
+                        "IsPartOfWord": false,
+                        "StartTime": 79.7,
+                        "EndTime": 83.37
+                    }
+                ],
+                "StartTime": 79.7,
+                "EndTime": 83.37
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "今日はもうおやすみなのじゃ",
+                        "IsPartOfWord": false,
+                        "StartTime": 83.37,
+                        "EndTime": 86.34
+                    }
+                ],
+                "StartTime": 83.37,
+                "EndTime": 86.34
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "「あ」朝のおはようから",
+                        "IsPartOfWord": false,
+                        "StartTime": 92.46,
+                        "EndTime": 94.81
+                    }
+                ],
+                "StartTime": 92.46,
+                "EndTime": 94.81
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "「い」いつもの背開きで",
+                        "IsPartOfWord": false,
+                        "StartTime": 94.81,
+                        "EndTime": 96.96
+                    }
+                ],
+                "StartTime": 94.81,
+                "EndTime": 96.96
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "「う」うつむくこともなく",
+                        "IsPartOfWord": false,
+                        "StartTime": 96.96,
+                        "EndTime": 99.03
+                    }
+                ],
+                "StartTime": 96.96,
+                "EndTime": 99.03
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "「え」笑顔で出かけてく",
+                        "IsPartOfWord": false,
+                        "StartTime": 99.03,
+                        "EndTime": 101.31
+                    }
+                ],
+                "StartTime": 99.03,
+                "EndTime": 101.31
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "「お」大きな背中をな",
+                        "IsPartOfWord": false,
+                        "StartTime": 101.31,
+                        "EndTime": 103.47
+                    }
+                ],
+                "StartTime": 101.31,
+                "EndTime": 103.47
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "今日も変わらず見せとくれ",
+                        "IsPartOfWord": false,
+                        "StartTime": 103.47,
+                        "EndTime": 105.84
+                    }
+                ],
+                "StartTime": 103.47,
+                "EndTime": 105.84
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "暖かな友や家族と",
+                        "IsPartOfWord": false,
+                        "StartTime": 105.84,
+                        "EndTime": 107.94
+                    }
+                ],
+                "StartTime": 105.84,
+                "EndTime": 107.94
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "いつか別れた道を行く",
+                        "IsPartOfWord": false,
+                        "StartTime": 107.94,
+                        "EndTime": 110.06
+                    }
+                ],
+                "StartTime": 107.94,
+                "EndTime": 110.06
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "美しき心の出会い",
+                        "IsPartOfWord": false,
+                        "StartTime": 110.06,
+                        "EndTime": 112.5
+                    }
+                ],
+                "StartTime": 110.06,
+                "EndTime": 112.5
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "得るほどに寂しくもある （だから！）",
+                        "IsPartOfWord": false,
+                        "StartTime": 112.5,
+                        "EndTime": 114.56
+                    }
+                ],
+                "StartTime": 112.5,
+                "EndTime": 114.56
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "おぬしと生きる今この時を",
+                        "IsPartOfWord": false,
+                        "StartTime": 114.56,
+                        "EndTime": 117
+                    }
+                ],
+                "StartTime": 114.56,
+                "EndTime": 117
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "ひとつひとつ 大切に！",
+                        "IsPartOfWord": false,
+                        "StartTime": 117,
+                        "EndTime": 119.36
+                    }
+                ],
+                "StartTime": 117,
+                "EndTime": 119.36
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "素直に泣いてもよいから",
+                        "IsPartOfWord": false,
+                        "StartTime": 119.36,
+                        "EndTime": 123.66
+                    }
+                ],
+                "StartTime": 119.36,
+                "EndTime": 123.66
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "思い切り泣いてもよいから",
+                        "IsPartOfWord": false,
+                        "StartTime": 123.66,
+                        "EndTime": 127.71
+                    }
+                ],
+                "StartTime": 123.66,
+                "EndTime": 127.71
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "あ〜童のような顔しとるなぁ",
+                        "IsPartOfWord": false,
+                        "StartTime": 127.71,
+                        "EndTime": 132.31
+                    }
+                ],
+                "StartTime": 127.71,
+                "EndTime": 132.31
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "ほ〜ら なでなでじゃ",
+                        "IsPartOfWord": false,
+                        "StartTime": 132.31,
+                        "EndTime": 134.67
+                    }
+                ],
+                "StartTime": 132.31,
+                "EndTime": 134.67
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "ぽっかりと浮かんどるお月様",
+                        "IsPartOfWord": false,
+                        "StartTime": 134.67,
+                        "EndTime": 139.16
+                    }
+                ],
+                "StartTime": 134.67,
+                "EndTime": 139.16
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "特別な願い事しようかの？",
+                        "IsPartOfWord": false,
+                        "StartTime": 139.16,
+                        "EndTime": 143.63
+                    }
+                ],
+                "StartTime": 139.16,
+                "EndTime": 143.63
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "どうかこの先もずっと",
+                        "IsPartOfWord": false,
+                        "StartTime": 143.63,
+                        "EndTime": 147.95
+                    }
+                ],
+                "StartTime": 143.63,
+                "EndTime": 147.95
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "続きは秘密じゃよ！ （内緒じゃ）",
+                        "IsPartOfWord": false,
+                        "StartTime": 147.95,
+                        "EndTime": 152.48
+                    }
+                ],
+                "StartTime": 147.95,
+                "EndTime": 152.48
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "ふわふわに包まれて仙狐心地",
+                        "IsPartOfWord": false,
+                        "StartTime": 152.48,
+                        "EndTime": 156.67
+                    }
+                ],
+                "StartTime": 152.48,
+                "EndTime": 156.67
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "おぬしがそう大好きなしっぽじゃよ",
+                        "IsPartOfWord": false,
+                        "StartTime": 156.67,
+                        "EndTime": 161.78
+                    }
+                ],
+                "StartTime": 156.67,
+                "EndTime": 161.78
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "その寝顔いつまでも 今後とも",
+                        "IsPartOfWord": false,
+                        "StartTime": 161.78,
+                        "EndTime": 169.22
+                    }
+                ],
+                "StartTime": 161.78,
+                "EndTime": 169.22
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "よろしくなのじゃ！",
+                        "IsPartOfWord": false,
+                        "StartTime": 169.22,
+                        "EndTime": 171.92
+                    }
+                ],
+                "StartTime": 169.22,
+                "EndTime": 171.92
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "神の使いお稲荷さん！ （ほいっ）",
+                        "IsPartOfWord": false,
+                        "StartTime": 174.58,
+                        "EndTime": 179.02
+                    }
+                ],
+                "StartTime": 174.58,
+                "EndTime": 179.02
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "も〜ふもふ！ も〜ふもふ！",
+                        "IsPartOfWord": false,
+                        "StartTime": 179.02,
+                        "EndTime": 183.41
+                    }
+                ],
+                "StartTime": 179.02,
+                "EndTime": 183.41
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "たっぷり甘えて良いのじゃよ！ （ほいっ）",
+                        "IsPartOfWord": false,
+                        "StartTime": 183.41,
+                        "EndTime": 187.88
+                    }
+                ],
+                "StartTime": 183.41,
+                "EndTime": 187.88
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "も〜ふもふ！ も〜ふもふ！",
+                        "IsPartOfWord": false,
+                        "StartTime": 187.88,
+                        "EndTime": 192.4
+                    }
+                ],
+                "StartTime": 187.88,
+                "EndTime": 192.4
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "神の使いお稲荷さん！ （ほいっ）",
+                        "IsPartOfWord": false,
+                        "StartTime": 192.4,
+                        "EndTime": 196.99
+                    }
+                ],
+                "StartTime": 192.4,
+                "EndTime": 196.99
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "も〜ふもふ！ も〜ふもふ！",
+                        "IsPartOfWord": false,
+                        "StartTime": 196.99,
+                        "EndTime": 201.24
+                    }
+                ],
+                "StartTime": 196.99,
+                "EndTime": 201.24
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "たっぷり甘えて良いのじゃよ！ （ほいっ）",
+                        "IsPartOfWord": false,
+                        "StartTime": 201.24,
+                        "EndTime": 205.74
+                    }
+                ],
+                "StartTime": 201.24,
+                "EndTime": 205.74
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "も〜ふもふ！ も〜ふもふ！",
+                        "IsPartOfWord": false,
+                        "StartTime": 205.74,
+                        "EndTime": 212.49
+                    }
+                ],
+                "StartTime": 205.74,
+                "EndTime": 212.49
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "こんな日がいつまでも続けばと",
+                        "IsPartOfWord": false,
+                        "StartTime": 212.49,
+                        "EndTime": 216.98
+                    }
+                ],
+                "StartTime": 212.49,
+                "EndTime": 216.98
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "物思いふけることあるけれど",
+                        "IsPartOfWord": false,
+                        "StartTime": 216.98,
+                        "EndTime": 221.56
+                    }
+                ],
+                "StartTime": 216.98,
+                "EndTime": 221.56
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "明日は今日よりもっと",
+                        "IsPartOfWord": false,
+                        "StartTime": 221.56,
+                        "EndTime": 225.88
+                    }
+                ],
+                "StartTime": 221.56,
+                "EndTime": 225.88
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "癒してやるからの！ よいな？",
+                        "IsPartOfWord": false,
+                        "StartTime": 225.88,
+                        "EndTime": 232.43
+                    }
+                ],
+                "StartTime": 225.88,
+                "EndTime": 232.43
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "もっふもふに癒されてよいのじゃよ 特別に好きにしてよいからの",
+                        "IsPartOfWord": false,
+                        "StartTime": 232.43,
+                        "EndTime": 241.58
+                    }
+                ],
+                "StartTime": 232.43,
+                "EndTime": 241.58
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "たまにちょっと甘えとる",
+                        "IsPartOfWord": false,
+                        "StartTime": 241.58,
+                        "EndTime": 245.9
+                    }
+                ],
+                "StartTime": 241.58,
+                "EndTime": 245.9
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "そんなところもよいな （よ～しよし）",
+                        "IsPartOfWord": false,
+                        "StartTime": 245.9,
+                        "EndTime": 250.08
+                    }
+                ],
+                "StartTime": 245.9,
+                "EndTime": 250.08
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "もっふもふに包まれてよいのじゃよ おぬしはそう大切な宝物",
+                        "IsPartOfWord": false,
+                        "StartTime": 250.08,
+                        "EndTime": 259.67
+                    }
+                ],
+                "StartTime": 250.08,
+                "EndTime": 259.67
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "この笑顔いつまでも",
+                        "IsPartOfWord": false,
+                        "StartTime": 259.67,
+                        "EndTime": 263.45
+                    }
+                ],
+                "StartTime": 259.67,
+                "EndTime": 263.45
+            }
+        },
+        {
+            "Type": "Vocal",
+            "OppositeAligned": false,
+            "Lead": {
+                "Syllables": [
+                    {
+                        "Text": "今日はもうおやすみなのじゃ",
+                        "IsPartOfWord": false,
+                        "StartTime": 263.45,
+                        "EndTime": 268.03
+                    }
+                ],
+                "StartTime": 263.45,
+                "EndTime": 268.03
+            }
+        }
+    ]
+}
