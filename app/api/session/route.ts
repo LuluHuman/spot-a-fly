@@ -6,15 +6,9 @@ import { TOTP } from "totp-generator"
 export async function GET() {
     const cookieStore = cookies()
     const sp_dc = cookieStore.get("sp_dc")
+    if (!sp_dc || !sp_dc.value) return Response.json({ err: "No sp_dc cookie" }, { status: 400 })
 
-    const tokenURL = await generateTokenUrl()
-    if (!tokenURL) return Response.json({ err: "cant get token key" }, { status: 500 });
-    try {
-        const tokenReq = await axios.get(tokenURL, sp_dc ? { headers: { Cookie: `sp_dc=${sp_dc.value};` } } : undefined)
-        return Response.json(tokenReq.data);
-    } catch (err: any) {
-        return Response.json({ err }, { status: err.status || 500 })
-    }
+    return await getToken(sp_dc.value)
 }
 export async function POST(req: Request) {
     const data = await req.json()
@@ -30,9 +24,13 @@ export async function POST(req: Request) {
             maxAge: 60 * 60 * 24 * 30,
         });
 
-    const { otp } = TOTP.generate("GU2TANZRGQ2TQNJTGQ4DONBZHE2TSMRSGQ4DMMZQGMZDSMZUG4")
-    const tspmo = new Date().getTime()
-    const tokenURL = `https://open.spotify.com/api/token?reason=init&productType=web-player&totp=${otp}&totpVer=5&ts=${tspmo}`;
+    return await getToken(data.session)
+
+}
+
+async function getToken(sp_dc: string) {
+    const tokenURL = await generateTokenUrl()
+    if (!tokenURL) return Response.json({ err: "cant get token key" }, { status: 500 });
     try {
         const tokenReq = await axios.get(tokenURL, sp_dc ? { headers: { Cookie: `sp_dc=${sp_dc};` } } : undefined)
         return Response.json(tokenReq.data);
