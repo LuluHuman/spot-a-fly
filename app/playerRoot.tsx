@@ -99,7 +99,7 @@ export default function Player({ children }: { children: React.ReactNode }) {
 	//! View related things
 	const [ShowDevices, setDevicesOverlay] = useState<boolean>(false);
 	const [hidePlayerOptions, setPlayerOptionsHidden] = useState<boolean>(true);
-	const [hidePlayer, setPlayerHidden] = useState<boolean>(true);
+	const [hidePlayer, setPlayerHidden] = useState<boolean>(false);
 	const [viewType, setViewType] = useState<undefined | number>(v ? parseInt(v) : undefined);
 	const [lyricText, setLyricsText] = useState<React.JSX.Element | React.JSX.Element[] | string>();
 	const [lyrcs, setLyrics] = useState<Lyrics[]>();
